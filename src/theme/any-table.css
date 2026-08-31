@@ -1,0 +1,64 @@
+/* AnyTable Standalone Styling & CSS Variables */
+
+:root {
+  --any-table-primary: #2667EC;
+  --any-table-primary-hover: #1E54C6;
+  --any-table-primary-soft: #397FF6;
+  --any-table-secondary: #39E965;
+  --any-table-success: #10B981;
+  --any-table-warning: #F59E0B;
+  --any-table-danger: #EF4444;
+  --any-table-font: "Alexandria", system-ui, -apple-system, sans-serif;
+}
+
+.any-table-wrapper {
+  font-family: var(--any-table-font);
+}
+
+/* Animations */
+@keyframes anyTableFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes anyTablePulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.any-table-fade-in {
+  animation: anyTableFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.any-table-pulse {
+  animation: anyTablePulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Custom Scrollbars */
+.any-table-scrollbar::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+.any-table-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.any-table-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 9999px;
+}
+
+.any-table-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.6);
+}

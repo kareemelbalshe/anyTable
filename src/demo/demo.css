@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #2667EC;
+  --color-primary-soft: #397FF6;
+  --color-secondary: #39E965;
+}
+
+body {
+  font-family: "Alexandria", "Inter", system-ui, sans-serif;
+  margin: 0;
+  padding: 0;
+}
