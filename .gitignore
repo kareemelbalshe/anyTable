@@ -1,34 +1,68 @@
 # Dependencies
-node_modules
+node_modules/
 .pnp
 .pnp.js
 
-# Testing
-coverage
+# Environment Variables & Secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
 
 # Production & Build outputs
-dist
-dist-ssr
+dist/
+dist-ssr/
+build/
+out/
 *.local
+*.tsbuildinfo
 
-# Logs
+# Testing & Coverage
+coverage/
+.nyc_output/
+test-results/
+.vitest-coverage/
+
+# Logs & Diagnostics
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Editor and OS
+# Editor, OS & System files
 .vscode/*
 !.vscode/extensions.json
-.idea
+!.vscode/settings.json
+.idea/
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Thumbs.db:encryptable
+Desktop.ini
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+*.bak
+*.tmp
 
-# Vite & IDE caches
-.vite
-.gemini
+# Caches & Temporary files
+.cache/
+.eslintcache
+.stylelintcache
+.vite/
+.turbo/
+.gemini/
+.agents/
+
+# Nested duplicate backup directory
+any-table/
