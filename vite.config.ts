@@ -5,11 +5,14 @@ import { resolve } from "path";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-  const isLibrary = mode === "production" || process.env.BUILD_MODE === "lib";
+  const isDemo = mode === "demo";
+  const isLibrary = !isDemo && (mode === "production" || process.env.BUILD_MODE === "lib");
 
   return {
+    base: isDemo ? "/anyTable/" : "/",
     plugins: [tailwindcss(), react()],
     build: {
+      outDir: isDemo ? "dist-demo" : "dist",
       lib: isLibrary
         ? {
             entry: resolve(__dirname, "src/index.ts"),

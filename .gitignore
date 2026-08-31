@@ -13,6 +13,7 @@ node_modules/
 
 # Production & Build outputs
 dist/
+dist-demo/
 dist-ssr/
 build/
 out/

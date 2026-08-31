@@ -3,10 +3,11 @@
 > **A developer-facing, smart data table library for React (18 & 19) & TypeScript with 3-Tier API auto-detection, dynamic column extraction, autonomous server/client search, sorting & pagination, interactive row actions with instant PATCH switches, and zero business logic coupling.**
 
 [![npm version](https://img.shields.io/npm/v/@kareem/any-table.svg)](https://npmjs.org/package/@kareem/any-table)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Online-brightgreen?logo=react)](https://kareemelbalshe.github.io/anyTable/)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Strict%205.0%2B-blue)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-18%20%7C%2019-61dafb)](https://react.dev/)
-[![Tests](https://img.shields.io/badge/Tests-42%20Passed-success)](https://vitest.dev/)
+[![Tests](https://img.shields.io/badge/Tests-46%20Passed-success)](https://vitest.dev/)
 
 ---
 
