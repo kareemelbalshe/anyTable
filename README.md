@@ -2,7 +2,7 @@
 
 > **A developer-facing, smart data table library for React (18 & 19) & TypeScript with 3-Tier API auto-detection, dynamic column extraction, autonomous server/client search, sorting & pagination, interactive row actions with instant PATCH switches, and zero business logic coupling.**
 
-[![npm version](https://img.shields.io/npm/v/@kareem/any-table.svg)](https://npmjs.org/package/@kareem/any-table)
+[![npm version](https://img.shields.io/npm/v/@kareemelbalshe/any-table.svg)](https://npmjs.org/package/@kareemelbalshe/any-table)
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Online-brightgreen?logo=react)](https://kareemelbalshe.github.io/anyTable/)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Strict%205.0%2B-blue)](https://www.typescriptlang.org/)
@@ -64,13 +64,13 @@ AnyTable is intentionally designed to **never lock you into specific backend con
 
 ```bash
 # Using NPM
-npm install @kareem/any-table react-icons
+npm install @kareemelbalshe/any-table react-icons
 
 # Using Yarn
-yarn add @kareem/any-table react-icons
+yarn add @kareemelbalshe/any-table react-icons
 
 # Using PNPM
-pnpm add @kareem/any-table react-icons
+pnpm add @kareemelbalshe/any-table react-icons
 ```
 
 ### 2. Import CSS Styles
@@ -79,7 +79,7 @@ Import the library stylesheet once in your main application entry point:
 
 ```tsx
 // In main.tsx / App.tsx (Vite / CRA) or app/layout.tsx (Next.js)
-import "@kareem/any-table/style.css";
+import "@kareemelbalshe/any-table/style.css";
 ```
 
 ---
@@ -92,8 +92,8 @@ Pass any plain JavaScript array without defining columns. AnyTable automatically
 
 ```tsx
 import React from "react";
-import { AnyTable } from "@kareem/any-table";
-import "@kareem/any-table/style.css";
+import { AnyTable } from "@kareemelbalshe/any-table";
+import "@kareemelbalshe/any-table/style.css";
 
 const orders = [
   { id: "ORD-101", customerName: "Ahmed Ali", total: 4500, isPaid: true, createdAt: "2026-08-15T10:30:00Z" },
@@ -122,7 +122,7 @@ Pass your `fetcher` function. AnyTable will automatically pass `{ page, pageSize
 
 ```tsx
 import React from "react";
-import { AnyTable } from "@kareem/any-table";
+import { AnyTable } from "@kareemelbalshe/any-table";
 import axios from "axios";
 
 interface User {
@@ -233,7 +233,7 @@ AnyTable connects seamlessly to any external public REST API with zero boilerpla
 
 ### 🛍️ 1. DummyJSON Products Inventory (E-Commerce)
 ```tsx
-import { AnyTable } from "@kareem/any-table";
+import { AnyTable } from "@kareemelbalshe/any-table";
 
 export default function ProductsTable() {
   return (
@@ -267,7 +267,7 @@ export default function ProductsTable() {
 
 ### 🐙 2. GitHub Search Repositories API
 ```tsx
-import { AnyTable } from "@kareem/any-table";
+import { AnyTable } from "@kareemelbalshe/any-table";
 
 export default function GitHubSearchTable() {
   return (
@@ -315,7 +315,7 @@ This production-grade pattern demonstrates nested customer records, VAT computat
 
 ```tsx
 import React, { useState } from "react";
-import { AnyTable } from "@kareem/any-table";
+import { AnyTable } from "@kareemelbalshe/any-table";
 
 export default function EnterpriseOrdersDashboard() {
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
@@ -549,7 +549,7 @@ Control search, pagination, and data refreshing programmatically from any extern
 
 ```tsx
 import React, { useRef } from "react";
-import { AnyTable, TableInstance } from "@kareem/any-table";
+import { AnyTable, TableInstance } from "@kareemelbalshe/any-table";
 
 export default function Dashboard() {
   const tableRef = useRef<TableInstance<User>>(null);
@@ -667,8 +667,8 @@ Because AnyTable utilizes client-side state and interactive events, mark your co
 ```tsx
 "use client";
 
-import { AnyTable } from "@kareem/any-table";
-import "@kareem/any-table/style.css";
+import { AnyTable } from "@kareemelbalshe/any-table";
+import "@kareemelbalshe/any-table/style.css";
 
 export default function AdminPage() {
   return (
@@ -724,11 +724,11 @@ export default function AdminPage() {
 
 ### 📦 الخطوة 1: التثبيت والاستيراد الأساسي
 ```bash
-npm install @kareem/any-table react-icons
+npm install @kareemelbalshe/any-table react-icons
 ```
 في ملف المدخل الأساسي لتطبيقك (`main.tsx` أو `App.tsx` أو `app/layout.tsx`):
 ```tsx
-import "@kareem/any-table/style.css";
+import "@kareemelbalshe/any-table/style.css";
 ```
 
 ---
@@ -736,7 +736,7 @@ import "@kareem/any-table/style.css";
 ### 💡 الحالة 1: جدول فوري بدون أي إعداد للأعمدة (Zero Configuration)
 مرر مصفوفة بيانات خام مباشرة، وسيقوم الجدول باستخراج الحقول وتحويل العناوين وضبط البحث والترقيم تلقائياً:
 ```tsx
-import { AnyTable } from "@kareem/any-table";
+import { AnyTable } from "@kareemelbalshe/any-table";
 
 const users = [
   { id: 1, fullName: "كريم البلسي", email: "kareem@example.com", balance: 5000, isActive: true },
@@ -888,7 +888,7 @@ actions={[
 للتحكم في الجدول من أزرار خارجية في صفحتك:
 ```tsx
 import { useRef } from "react";
-import { AnyTable, TableInstance } from "@kareem/any-table";
+import { AnyTable, TableInstance } from "@kareemelbalshe/any-table";
 
 export default function AdminPage() {
   const tableRef = useRef<TableInstance>(null);
@@ -973,8 +973,8 @@ export default function SelectionPage() {
 ```tsx
 "use client";
 
-import { AnyTable } from "@kareem/any-table";
-import "@kareem/any-table/style.css";
+import { AnyTable } from "@kareemelbalshe/any-table";
+import "@kareemelbalshe/any-table/style.css";
 
 export default function UsersPage() {
   return (

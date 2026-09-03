@@ -1,5 +1,5 @@
 {
-  "name": "@kareem/any-table",
+  "name": "@kareemelbalshe/any-table",
   "version": "1.0.0",
   "description": "A developer-facing, smart data table library with 3-tier API detection, auto columns, server/client search, sort & pagination, extensible action callbacks, and customizable themes.",
   "keywords": [
