@@ -15,7 +15,7 @@
     "typescript",
     "react-table"
   ],
-  "author": "Kareem",
+  "author": "Kareem Elbalshe",
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -31,16 +31,29 @@
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kareemelbalshe/anyTable.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kareemelbalshe/anyTable/issues"
+  },
+  "homepage": "https://kareemelbalshe.github.io/anyTable/",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "vite build",
     "build:demo": "vite build --mode demo",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run test && npm run build"
   },
   "peerDependencies": {
     "react": ">=18.0.0",

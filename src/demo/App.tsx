@@ -183,9 +183,11 @@ export default function App() {
       <header className="border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-6 py-4 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-primary via-blue-500 to-indigo-500 flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-primary/30">
-              A
-            </div>
+            <img
+              src={`${import.meta.env.BASE_URL}logo.svg`}
+              alt="AnyTable Logo"
+              className="w-11 h-11 rounded-2xl shadow-lg shadow-primary/30 object-contain border border-white/10"
+            />
             <div>
               <h1 className="text-xl font-black tracking-tight text-gray-900 dark:text-white flex items-center gap-2">
                 AnyTable

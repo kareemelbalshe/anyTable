@@ -1,4 +1,10 @@
-/* AnyTable Standalone Styling & CSS Variables */
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #2667EC;
+  --color-primary-soft: #397FF6;
+  --color-secondary: #39E965;
+}
 
 :root {
   --any-table-primary: #2667EC;
