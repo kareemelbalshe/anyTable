@@ -1,8 +1,8 @@
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent, act } from "@testing-library/react";
-import "@testing-library/jest-dom";
 import { AnyTable } from "../components/AnyTable";
+import { AnyTableThemeProvider } from "../theme/themeContext";
 
 describe("<AnyTable /> Component", () => {
   const users = [
@@ -55,6 +55,90 @@ describe("<AnyTable /> Component", () => {
 
     expect(handleEdit).toHaveBeenCalledTimes(1);
     expect(handleEdit.mock.calls[0][0]).toEqual(users[0]);
+  });
+
+  it("Renders action buttons with icons and handles clicks", async () => {
+    const handleAction = vi.fn();
+
+    render(
+      <AnyTable
+        data={users}
+        columns={[{ key: "name", title: "Name" }]}
+        actions={[
+          {
+            id: "details",
+            label: "Details",
+            icon: <span data-testid="test-icon">🔍</span>,
+            onClick: handleAction,
+          },
+          {
+            id: "icon-only",
+            icon: (row) => <span data-testid={`dyn-icon-${row.id}`}>⚙️</span>,
+            tooltip: "Settings",
+            onClick: handleAction,
+          },
+        ]}
+      />
+    );
+
+    const icons = screen.getAllByTestId("test-icon");
+    expect(icons.length).toBe(2);
+
+    const dynIcon = screen.getByTestId("dyn-icon-1");
+    expect(dynIcon).toBeInTheDocument();
+
+    await act(async () => {
+      fireEvent.click(icons[0]);
+    });
+
+    expect(handleAction).toHaveBeenCalledTimes(1);
+  });
+
+  it("Accepts react-icons Component directly, image URLs, and emojis as action icons", () => {
+    // Component definition like react-icons (IconType)
+    function FiCustomEdit(props: any) {
+      return <svg data-testid="react-icon-comp" className={props.className} />;
+    }
+
+    render(
+      <AnyTable
+        data={users}
+        columns={[{ key: "name", title: "Name" }]}
+        actions={[
+          // 1. Direct Component from react-icons (without instantiating <... />)
+          {
+            id: "comp-icon",
+            label: "Edit",
+            icon: FiCustomEdit,
+            onClick: vi.fn(),
+          },
+          // 2. Image URL string
+          {
+            id: "img-icon",
+            icon: "/icons/avatar.svg",
+            onClick: vi.fn(),
+          },
+          // 3. Emoji string
+          {
+            id: "emoji-icon",
+            icon: "🔥",
+            onClick: vi.fn(),
+          },
+        ]}
+      />
+    );
+
+    // Verify react-icons Component rendered
+    const compIcons = screen.getAllByTestId("react-icon-comp");
+    expect(compIcons.length).toBe(2);
+
+    // Verify image url rendered as <img>
+    const imgIcons = screen.getAllByRole("img");
+    expect(imgIcons.length).toBe(2);
+    expect(imgIcons[0]).toHaveAttribute("src", "/icons/avatar.svg");
+
+    // Verify emoji rendered
+    expect(screen.getAllByText("🔥").length).toBe(2);
   });
 
   it("Renders Switch action and triggers onChange", async () => {
@@ -160,6 +244,84 @@ describe("<AnyTable /> Component", () => {
     expect(await screen.findByTestId("custom-error")).toBeInTheDocument();
     expect(screen.getByText("Custom: Network Failure 503")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Custom Retry" })).toBeInTheDocument();
+  });
+
+  it("Inherits global styling from AnyTableThemeProvider across tables", () => {
+    const { container } = render(
+      <AnyTableThemeProvider
+        theme={{
+          classes: {
+            tableWrapper: "global-custom-table-wrapper",
+          },
+        }}
+      >
+        <AnyTable
+          data={users}
+          columns={[{ key: "name", title: "Name" }]}
+        />
+      </AnyTableThemeProvider>
+    );
+
+    expect(container.querySelector(".global-custom-table-wrapper")).toBeInTheDocument();
+  });
+
+  it("Applies built-in visual presets like 'ocean' and 'midnight'", () => {
+    const { container: oceanContainer } = render(
+      <AnyTable
+        data={users}
+        preset="ocean"
+        columns={[{ key: "name", title: "Name" }]}
+      />
+    );
+
+    // Verify sky / ocean classes applied to table wrapper
+    expect(oceanContainer.querySelector(".border-sky-500\\/20")).toBeInTheDocument();
+
+    const { container: midnightContainer } = render(
+      <AnyTable
+        data={users}
+        preset="midnight"
+        columns={[{ key: "name", title: "Name" }]}
+      />
+    );
+
+    // Verify midnight indigo classes applied
+    expect(midnightContainer.querySelector(".bg-\\[\\#090D16\\]")).toBeInTheDocument();
+  });
+
+  it("Supports granular manual customization: custom borders, headerClassName, and dynamic rowClassName", () => {
+    const { container } = render(
+      <AnyTable
+        data={users}
+        columns={[{ key: "name", title: "Name" }]}
+        headerClassName="ultra-custom-header-class"
+        rowClassName={(row) => (row.active ? "row-is-active" : "row-is-inactive")}
+        theme={{
+          borderRadius: "4px",
+          colors: {
+            border: "#ef4444",
+            primary: "#8b5cf6",
+          },
+          classes: {
+            searchInput: "ultra-custom-search-input",
+          },
+        }}
+      />
+    );
+
+    // Verify custom header class applied
+    expect(container.querySelector(".ultra-custom-header-class")).toBeInTheDocument();
+
+    // Verify dynamic rowClassName applied to rows based on row data
+    expect(container.querySelector(".row-is-active")).toBeInTheDocument();
+    expect(container.querySelector(".row-is-inactive")).toBeInTheDocument();
+
+    // Verify custom input class applied
+    expect(container.querySelector(".ultra-custom-search-input")).toBeInTheDocument();
+
+    // Verify CSS variables for radius and border injected
+    const wrapper = container.querySelector(".any-table-wrapper");
+    expect(wrapper).toHaveStyle({ "--any-table-radius": "4px" });
   });
 });
 

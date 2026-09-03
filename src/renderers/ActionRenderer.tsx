@@ -2,6 +2,90 @@ import React, { useState } from "react";
 import { TableAction, SwitchAction, ActionContext, ActionVariant } from "../types/action.types";
 import { ConfirmModal } from "../components/TableConfirmDialog";
 
+/**
+ * Safely resolves and renders any icon format:
+ * - JSX Elements (e.g. <FiEdit />, <svg>...)
+ * - React Components passed directly (e.g. FiEdit from react-icons, Lucide, or custom components)
+ * - Dynamic generator functions: (row) => <FiLock /> or (row) => FiLock
+ * - Strings & Emojis: "✏️", "🗑️"
+ * - Image URLs: "/icon.svg", "https://...", "data:image/..."
+ */
+export function renderActionIcon<TData = any>(
+  rawIcon: any,
+  row: TData
+): React.ReactNode {
+  if (!rawIcon) return null;
+
+  // 1. Direct JSX Element (e.g. <FiEdit />, <svg>...</svg>)
+  if (React.isValidElement(rawIcon)) {
+    return rawIcon;
+  }
+
+  // 2. React Component or Generator Function
+  if (typeof rawIcon === "function") {
+    // Check if it's a React Component Class
+    if (rawIcon.prototype && (rawIcon.prototype as any).isReactComponent) {
+      const Component = rawIcon;
+      return <Component className="w-4 h-4 shrink-0" />;
+    }
+
+    // Check if it's a Component function (by convention, Component names start with Uppercase, e.g. FiEdit, LuTrash, Icon)
+    const fnName = rawIcon.displayName || rawIcon.name || "";
+    const isNamedComponent = /^[A-Z]/.test(fnName);
+
+    if (isNamedComponent) {
+      const IconComponent = rawIcon;
+      return <IconComponent className="w-4 h-4 shrink-0" />;
+    }
+
+    // Otherwise, treat as a dynamic generator function: (row) => icon
+    try {
+      const resolved = rawIcon(row);
+      return renderActionIcon(resolved, row);
+    } catch {
+      // Fallback: If calling as function failed, render as component
+      const FallbackComponent = rawIcon;
+      return <FallbackComponent className="w-4 h-4 shrink-0" />;
+    }
+  }
+
+  // 3. React forwardRef / memo component objects
+  if (
+    typeof rawIcon === "object" &&
+    rawIcon !== null &&
+    (rawIcon.$$typeof || (rawIcon as any).render)
+  ) {
+    const MemoOrForwardRef = rawIcon as React.ComponentType<any>;
+    return <MemoOrForwardRef className="w-4 h-4 shrink-0" />;
+  }
+
+  // 4. String / Image URL / Emoji
+  if (typeof rawIcon === "string") {
+    // Check if it's an image file path or URL
+    if (
+      rawIcon.startsWith("http://") ||
+      rawIcon.startsWith("https://") ||
+      rawIcon.startsWith("/") ||
+      rawIcon.startsWith("./") ||
+      rawIcon.startsWith("data:image/") ||
+      /\.(png|jpe?g|svg|webp|gif|ico)$/i.test(rawIcon)
+    ) {
+      return (
+        <img
+          src={rawIcon}
+          alt="action-icon"
+          className="w-4 h-4 object-contain shrink-0 inline-block"
+        />
+      );
+    }
+
+    // Emoji or plain text icon
+    return <span className="inline-flex items-center justify-center leading-none text-base">{rawIcon}</span>;
+  }
+
+  return rawIcon as React.ReactNode;
+}
+
 export interface ActionRendererProps<TData = any> {
   row: TData;
   actions: TableAction<TData>[];
@@ -103,8 +187,7 @@ export const ActionRenderer: React.FC<ActionRendererProps> = ({ row, actions, co
 
           const label =
             typeof action.label === "function" ? action.label(row) : action.label;
-          const icon =
-            typeof action.icon === "function" ? action.icon(row) : action.icon;
+          const renderedIcon = renderActionIcon(action.icon, row);
           const tooltip =
             typeof action.tooltip === "function" ? action.tooltip(row) : action.tooltip;
           const customClass =
@@ -160,6 +243,7 @@ export const ActionRenderer: React.FC<ActionRendererProps> = ({ row, actions, co
           const resolvedVariant =
             typeof action.variant === "function" ? action.variant(row) : action.variant || "neutral";
           const variantClass = VARIANT_CLASSES[resolvedVariant] || VARIANT_CLASSES.neutral;
+          const paddingClass = !label && renderedIcon ? "p-2 min-w-[2rem]" : "px-3 py-1.5";
 
           return (
             <button
@@ -169,12 +253,12 @@ export const ActionRenderer: React.FC<ActionRendererProps> = ({ row, actions, co
               onClick={() => handleActionClick(action)}
               title={tooltip}
               style={action.color ? { backgroundColor: action.color, color: "#ffffff" } : undefined}
-              className={`inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100 ${variantClass} ${customClass}`}
+              className={`inline-flex items-center justify-center gap-1.5 ${paddingClass} rounded-xl text-xs font-bold transition-all duration-200 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100 ${variantClass} ${customClass}`}
             >
               {isPending ? (
                 <span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
               ) : (
-                icon && <span className="text-sm">{icon}</span>
+                renderedIcon && <span className="text-sm flex items-center justify-center shrink-0">{renderedIcon}</span>
               )}
               {label && <span>{label}</span>}
             </button>

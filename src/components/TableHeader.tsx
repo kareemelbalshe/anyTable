@@ -14,6 +14,7 @@ export interface TableHeaderProps<TData = any> {
   allSelected?: boolean;
   isIndeterminate?: boolean;
   onToggleSelectAll?: () => void;
+  headerClassName?: string;
 }
 
 export const TableHeader: React.FC<TableHeaderProps> = ({
@@ -28,11 +29,19 @@ export const TableHeader: React.FC<TableHeaderProps> = ({
   allSelected,
   isIndeterminate,
   onToggleSelectAll,
+  headerClassName = "",
 }) => {
   const theme = useAnyTableTheme();
 
+  const theadStyle: React.CSSProperties = {};
+  if (theme.colors?.theadBg) theadStyle.backgroundColor = theme.colors.theadBg;
+  if (theme.colors?.theadText) theadStyle.color = theme.colors.theadText;
+
   return (
-    <thead className={theme.classes?.thead || "bg-gray-50/80 dark:bg-slate-800/80 border-b border-gray-200 dark:border-gray-800"}>
+    <thead
+      style={theadStyle}
+      className={`${theme.classes?.thead || "bg-gray-50/80 dark:bg-slate-800/80 border-b border-gray-200 dark:border-gray-800"} ${headerClassName}`}
+    >
       <tr>
         {/* Checkbox Select All Column */}
         {selectable && (

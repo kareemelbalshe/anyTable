@@ -1,5 +1,15 @@
 export type ThemeMode = "light" | "dark" | "system" | "auto";
 
+export type TablePreset =
+  | "default"
+  | "midnight"
+  | "emerald"
+  | "ocean"
+  | "luxury"
+  | "crimson"
+  | "minimal"
+  | "corporate";
+
 export interface ThemeColors {
   primary: string;
   primaryHover: string;
@@ -19,6 +29,9 @@ export interface ThemeColors {
   inputBg: string;
   rowHover: string;
   rowSelected: string;
+  theadBg?: string;
+  theadText?: string;
+  rowStripe?: string;
 }
 
 export interface AnyTableThemeClasses {
@@ -46,9 +59,11 @@ export interface AnyTableThemeClasses {
 
 export interface AnyTableTheme {
   mode?: ThemeMode;
+  preset?: TablePreset;
   colors?: Partial<ThemeColors>;
   classes?: AnyTableThemeClasses;
   borderRadius?: string;
+  borderWidth?: string;
   fontFamily?: string;
   density?: "compact" | "normal" | "spacious";
 }

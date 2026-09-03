@@ -414,27 +414,107 @@ export default function EnterpriseOrdersDashboard() {
 
 Define clean actions per row without mixing UI code with data rendering:
 
-### 1. Action Buttons
+### 1. Action Buttons with Icons & Labels
+
+AnyTable supports rich action buttons and handles **ANY icon format** automatically:
+- **React Components directly** (e.g. `icon: FiEye` from `react-icons` or Lucide, without needing `< >`)
+- **JSX Elements** (e.g. `icon: <FiEye size={16} className="text-blue-500" />`)
+- **Dynamic Functions** (e.g. `icon: (row) => row.isLocked ? FiUnlock : FiLock`)
+- **Emoji / Text strings** (e.g. `icon: "⭐"` or `"✏️"`)
+- **Image URLs & SVGs** (e.g. `icon: "/icons/edit.svg"` or `"https://..."`)
 
 ```tsx
+import { FiEye, FiEdit2, FiTrash2, FiLock, FiUnlock } from "react-icons/fi";
+
 <AnyTable<User>
   data={users}
+  actionsTitle="Operations" // Custom column header (default: "Actions")
+  actionsWidth={280}        // Custom column width in px
   actions={[
+    // 1. Direct Component from react-icons (Cleanest syntax: no JSX tags needed!)
     {
       id: "view",
-      label: "View Profile",
+      label: "View",
+      icon: FiEye, // Passes component reference directly
       variant: "primary",
       onClick: (row) => navigate(`/users/${row.id}`),
     },
+
+    // 2. JSX Element with custom props
     {
       id: "edit",
-      label: "Edit",
+      icon: <FiEdit2 size={15} className="text-blue-400" />,
+      tooltip: "Edit User Information",
       variant: "neutral",
       onClick: (row) => openEditModal(row),
+    },
+
+    // 3. Dynamic Icon & Variant based on row data
+    {
+      id: "toggle-lock",
+      icon: (row) => (row.isLocked ? FiUnlock : FiLock),
+      label: (row) => (row.isLocked ? "Unlock" : "Lock"),
+      variant: (row) => (row.isLocked ? "warning" : "neutral"),
+      onClick: async (row, context) => {
+        await api.toggleLock(row.id);
+        context.refresh();
+      },
+    },
+
+    // 4. Emoji or Text String
+    {
+      id: "star",
+      icon: "⭐",
+      tooltip: "Bookmark",
+      onClick: (row) => toggleBookmark(row),
+    },
+
+    // 5. Image URL or custom SVG path
+    {
+      id: "badge",
+      icon: "/icons/verified.svg",
+      tooltip: "Verified Badge",
+      onClick: (row) => openBadge(row),
+    },
+
+    // 4. Destructive Action with Icon & Confirmation
+    {
+      id: "delete",
+      icon: <FiTrash2 />,
+      label: "Delete",
+      variant: "danger",
+      confirmation: {
+        title: "Delete Account",
+        message: (row) => `Are you sure you want to delete ${row.name}?`,
+        confirmText: "Yes, Delete",
+        cancelText: "Cancel",
+      },
+      onClick: async (row, context) => {
+        await api.deleteUser(row.id);
+        context.refresh();
+      },
     },
   ]}
 />
 ```
+
+#### Action Configuration Reference (`TableAction<TData>`)
+
+| Property | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | `string` | **Required** | Unique identifier for this action. |
+| `icon` | `ReactNode \| ((row: TData) => ReactNode)` | `undefined` | Custom icon element (SVG, `react-icons`, emoji) or dynamic generator function. |
+| `label` | `string \| ((row: TData) => string)` | `undefined` | Action text label. Optional (can be omitted for icon-only buttons). |
+| `variant` | `ActionVariant \| ((row) => ActionVariant)` | `'neutral'` | Theme color: `'primary' \| 'secondary' \| 'success' \| 'warning' \| 'danger' \| 'info' \| 'neutral' \| 'ghost'`. |
+| `tooltip` | `string \| ((row: TData) => string)` | `undefined` | Helpful hover tooltip (recommended for icon-only buttons). |
+| `onClick` | `(row, context) => void \| Promise<void>` | `undefined` | Click callback receiving current row and table controller context. |
+| `disabled` | `boolean \| ((row: TData) => boolean)` | `false` | Conditionally disable the button for specific rows. |
+| `show` / `hide`| `boolean \| ((row: TData) => boolean)` | `undefined` | Conditionally show or hide the action per row. |
+| `loading` | `boolean \| ((row: TData) => boolean)` | `false` | Displays an inline spinner while async operations execute. |
+| `confirmation`| `ActionConfirmation<TData>` | `undefined` | Built-in confirmation modal config before triggering `onClick`. |
+| `className` | `string \| ((row: TData) => string)` | `""` | Additional Tailwind / custom CSS classes. |
+| `color` | `string` | `undefined` | Custom background color override (hex / rgb). |
+
 
 ### 2. Instant PATCH / PUT Toggle Switch
 
@@ -639,20 +719,305 @@ AnyTable includes built-in resilience for real-world network conditions:
 
 ---
 
-## 🎨 Theming & Dark Mode
+## 🎨 Theming & Styling Architecture (Global & Per-Page)
 
-AnyTable is built with CSS variables and seamlessly adapts to light & dark modes. You can customize colors via the `theme` prop:
+AnyTable is designed from the ground up for maximum visual flexibility. You can define a **unified global theme once** for all tables in your application, or customize tables individually on specific pages.
+
+---
+
+### 🎭 Built-in Visual Presets (1-Line Designer Themes)
+
+AnyTable comes pre-packaged with **8 handcrafted design presets**. You can switch the entire aesthetic of any table with a single prop:
 
 ```tsx
-<AnyTable
+<AnyTable preset="midnight" data={cryptoTransactions} />
+<AnyTable preset="emerald" data={financialInvoices} />
+<AnyTable preset="ocean" data={shipmentLogistics} />
+<AnyTable preset="luxury" data={vipCustomers} />
+<AnyTable preset="crimson" data={criticalAlerts} />
+<AnyTable preset="minimal" data={cleanArticles} />
+<AnyTable preset="corporate" data={enterpriseData} />
+```
+
+| Preset | Visual Identity | Primary Accent | Vibe / Recommended For |
+| :--- | :--- | :--- | :--- |
+| **`default`** | Modern Electric Blue + Balanced Slate | `#2667EC` | General SaaS, Admin Dashboards, Standard Products |
+| **`midnight`** | Deep Cyber Void + Luminous Neon Indigo | `#6366F1` | Developer Tools, Cyber Security, Web3, Crypto Dashboards |
+| **`emerald`** | Crisp Forest + Vibrant Mint Green | `#10B981` | Fintech, Banking, Healthcare, Accounting, Analytics |
+| **`ocean`** | Deep Marine Navy + Radiant Cyan / Teal | `#0EA5E9` | Logistics, Supply Chain, Travel, Cloud Monitoring |
+| **`luxury`** | Champagne Gold + Obsidian & Bronze | `#D97706` | VIP Tiers, High-End Fashion, Real Estate, Concierge |
+| **`crimson`** | Bold Scarlet Rose + High Contrast | `#F43F5E` | Security Incidents, Critical Errors, Alert Monitors |
+| **`minimal`** | Monochromatic Borderless Airy High-Contrast | Monochromatic | Notion-style docs, Clean portfolios, Minimalist blogs |
+| **`corporate`** | Structured Enterprise Navy + Classic Borders | `#1E40AF` | ERP Systems, Traditional Corporate Systems, Audits |
+
+---
+
+### 🛠️ Deep Granular Customization (Control Every Pixel Literally)
+
+Don't want presets? AnyTable allows you to manually dictate the exact color, border, padding, and class for **literally every single element**:
+
+```tsx
+<AnyTable<Order>
+  data={orders}
+  bordered={false} // Toggle table wrapper borders
+  compact={false}  // Density control ('compact' | 'normal' | 'spacious')
+
+  // 1. Custom CSS on the <thead> element
+  headerClassName="bg-gradient-to-r from-purple-900 to-indigo-900 text-purple-200 uppercase tracking-widest text-[11px]"
+
+  // 2. Dynamic Row Styling based on row data
+  rowClassName={(row, index) =>
+    row.status === "Cancelled"
+      ? "bg-red-500/10 hover:bg-red-500/20 text-red-400 font-semibold"
+      : row.tier === "VIP"
+      ? "bg-amber-500/10 hover:bg-amber-500/20"
+      : ""
+  }
+
+  // 3. Complete Deep Theme Token Overrides
   theme={{
+    borderRadius: "0px", // Sharp brutalist square borders, or "1.5rem" for pill curves
+    fontFamily: "'Fira Code', monospace", // Custom font
+    density: "normal",
     colors: {
-      primary: "#2667EC",       // Wasel Electric Blue
-      background: "#0f172a",    // Custom Dark Background
-      text: "#f8fafc",          // Custom Light Text
-      borderRadius: "0.75rem",  // Border Radius
+      primary: "#9333EA",              // Active pagination, search rings, default button
+      primaryHover: "#7E22CE",
+      border: "#3B0764",               // Border color everywhere
+      theadBg: "#1E1B4B",              // Custom header background
+      theadText: "#E0E7FF",            // Custom header text color
+      rowHover: "rgba(147, 51, 234, 0.08)", // Row hover background
+      rowSelected: "rgba(147, 51, 234, 0.16)",
+      card: "#0F0B1E",                 // Card background
+    },
+    classes: {
+      tableWrapper: "border-2 border-purple-800/50 shadow-2xl shadow-purple-900/30",
+      searchInput: "bg-purple-950/40 border border-purple-700 text-purple-100 placeholder:text-purple-400 focus:ring-purple-500",
+      paginationButtonActive: "bg-purple-600 text-white font-black shadow-lg shadow-purple-600/50",
     },
   }}
+/>
+```
+
+---
+
+### 🌐 Part 1: How to Set a Unified Global Style for ALL Tables
+
+There are **3 recommended ways** to define a global style across your entire application:
+
+#### Method A: Global Provider (`AnyTableThemeProvider`) — *Recommended*
+
+Wrap your root layout or application entry point with `<AnyTableThemeProvider>`. Every `<AnyTable />` across all pages will automatically inherit these brand colors, Tailwind classes, and layout rules:
+
+**In Next.js (`app/layout.tsx` or `pages/_app.tsx`):**
+```tsx
+import "@kareemelbalshe/any-table/style.css";
+import { AnyTableThemeProvider } from "@kareemelbalshe/any-table";
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body>
+        <AnyTableThemeProvider
+          theme={{
+            colors: {
+              primary: "#2667EC",        // Your brand primary color
+              primaryHover: "#1E54C6",
+              card: "#0f172a",           // Dark card background
+              border: "#1e293b",         // Subtle borders
+            },
+            borderRadius: "1rem",        // Rounded table corners
+            density: "normal",           // 'compact' | 'normal' | 'comfortable'
+            classes: {
+              // Custom Tailwind classes applied to all tables in the app
+              tableWrapper: "rounded-2xl border border-slate-800 shadow-xl shadow-blue-500/5",
+              thead: "bg-slate-900/90 backdrop-blur-md text-slate-300 font-bold uppercase text-xs",
+              searchInput: "rounded-xl border border-slate-700 bg-slate-900 text-white focus:ring-primary",
+              paginationButtonActive: "bg-primary text-white shadow-md shadow-primary/30",
+            },
+          }}
+        >
+          {children}
+        </AnyTableThemeProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+**In Vite / CRA (`src/main.tsx` or `src/App.tsx`):**
+```tsx
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { AnyTableThemeProvider } from "@kareemelbalshe/any-table";
+import "@kareemelbalshe/any-table/style.css";
+import App from "./App";
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <AnyTableThemeProvider
+      theme={{
+        colors: { primary: "#7c3aed" }, // Violet brand theme
+        borderRadius: "0.75rem",
+      }}
+    >
+      <App />
+    </AnyTableThemeProvider>
+  </React.StrictMode>
+);
+```
+
+---
+
+#### Method B: Global CSS Variables (`globals.css` / `index.css`)
+
+AnyTable exposes native CSS variables that can be overridden directly in your global stylesheet:
+
+```css
+/* In your globals.css or index.css */
+:root {
+  --any-table-primary: #2667EC;         /* Main brand accent */
+  --any-table-primary-hover: #1E54C6;
+  --any-table-primary-soft: #397FF6;
+  --any-table-secondary: #39E965;       /* Secondary accent */
+  --any-table-success: #10B981;
+  --any-table-warning: #F59E0B;
+  --any-table-danger: #EF4444;
+  --any-table-font: "Inter", system-ui, sans-serif; /* Global table font */
+}
+```
+
+---
+
+#### Method C: Corporate Preset Component (`components/AppTable.tsx`)
+
+A proven enterprise pattern is to create a reusable wrapper component that pre-configures common settings (like standard actions title, bordered, striped, etc.):
+
+```tsx
+// components/AppTable.tsx
+import { AnyTable, AnyTableProps } from "@kareemelbalshe/any-table";
+
+export function AppTable<TData = any>(props: AnyTableProps<TData>) {
+  return (
+    <AnyTable<TData>
+      bordered
+      hoverable
+      striped={false}
+      actionsTitle="Operations"
+      actionsWidth={220}
+      className="shadow-sm transition-all"
+      {...props} // Allows per-page overrides whenever needed
+    />
+  );
+}
+
+// Then in ANY page, just use:
+// <AppTable data={orders} />
+```
+
+---
+
+### 📄 Part 2: Per-Page & Per-Table Customization (All Real-World Cases)
+
+When using AnyTable on specific pages, you can customize the appearance to match the exact context:
+
+#### Case 1: Pure Zero-Config (Inherits Global Theme Automatically)
+```tsx
+// Consumes the root AnyTableThemeProvider automatically with zero extra code
+<AnyTable data={users} />
+```
+
+#### Case 2: Local Color Override on a Specific Page
+```tsx
+// Overrides the primary color to Emerald for a Financials page without affecting other pages
+<AnyTable
+  data={invoices}
+  theme={{
+    colors: {
+      primary: "#10B981", // Emerald accent for finance
+    },
+  }}
+/>
+```
+
+#### Case 3: Dense Data Dashboard (`compact` mode)
+```tsx
+// Tight padding for high-density enterprise data tables
+<AnyTable
+  data={logs}
+  compact={true}        // Reduces padding on cells and headers
+  stickyHeader={true}   // Keeps the header visible while scrolling
+/>
+```
+
+#### Case 4: Visual Presets (Zebra Striped, Borderless, or Shadowed)
+```tsx
+<AnyTable
+  data={products}
+  bordered={false}      // Clean borderless look
+  striped={true}        // Alternating zebra row backgrounds
+  hoverable={true}      // Subtle highlight on hovered row
+  className="shadow-2xl rounded-3xl"
+  tableClassName="text-xs"
+/>
+```
+
+#### Case 5: Per-Column & Per-Cell Styling
+```tsx
+<AnyTable
+  data={transactions}
+  columns={[
+    { key: "id", title: "Ref #", width: 100 },
+    // Custom cell text color, alignment, and font
+    {
+      key: "amount",
+      title: "Amount",
+      align: "right",
+      className: "font-mono font-black text-emerald-500",
+      headerClassName: "text-right",
+    },
+    // Custom JSX rendering inside a cell
+    {
+      key: "riskScore",
+      title: "Risk Level",
+      render: (val) => (
+        <span className={val > 70 ? "text-rose-500 font-bold" : "text-gray-400"}>
+          {val}%
+        </span>
+      ),
+    },
+  ]}
+/>
+```
+
+#### Case 6: Dark Mode & Light Mode
+AnyTable automatically synchronizes with Tailwind's `dark` class on the `<html>` or `<body>` element (seamlessly compatible with `next-themes`). You can also force a specific mode on any table:
+```tsx
+<AnyTable
+  data={users}
+  theme={{ mode: "dark" }} // Forces dark theme regardless of system setting
+/>
+```
+
+#### Case 7: Custom Action Buttons Styling
+```tsx
+<AnyTable
+  data={users}
+  actions={[
+    {
+      id: "vip-btn",
+      label: "VIP Upgrade",
+      icon: "⭐",
+      color: "#8B5CF6", // Custom purple hex background
+      className: "hover:scale-105 shadow-md shadow-purple-500/30",
+      onClick: (row) => upgradeUser(row),
+    },
+    {
+      id: "delete",
+      icon: "🗑️",
+      variant: "danger", // Built-in danger theme
+      onClick: (row) => deleteUser(row),
+    },
+  ]}
 />
 ```
 
@@ -833,29 +1198,99 @@ import axios from "axios";
 
 ---
 
-### 💡 الحالة 5: مفاتيح الـ PATCH الفورية وأزرار العمليات (Actions & Switches)
-تعديل حالة السجل مباشرة بمفتاح Toggle دون مغادرة الجدول مع التحديث الفوري:
+### 💡 الحالة 5: أزرار العمليات المتقدمة، الأيقونات، ومفاتيح التبديل (Action Buttons, Icons & Switches)
+تتعامل AnyTable مع **أي شكل من أشكال الأيقونات تلقائياً وبكل مرونة**:
+- **مكوّن `react-icons` أو Lucide مباشرة بدون أوسمة** (مثل: `icon: FiEye` مباشرة دون الحاجة لكتابة `< >`).
+- **عنصر JSX كامل** مع تمرير الحجم واللون (مثل: `<FiEdit3 size={16} className="text-blue-500" />`).
+- **دالة ديناميكية** ترجع مكوّن أو JSX حسب بيانات السطر `(row) => row.isLocked ? FiUnlock : FiLock`.
+- **نص أو إيموجي** (مثل: `icon: "⭐"` أو `"🗑️"`).
+- **مسار صورة أو SVG** (مثل: `icon: "/icons/avatar.svg"` أو رابط خارجي).
+
 ```tsx
-actions={[
-  // 1. مفتاح تبديل يرسل طلب PATCH للباك إند ويحدث الجدول فوراً
-  {
-    id: "active-switch",
-    type: "switch",
-    label: "تفعيل",
-    checked: (row) => row.isActive,
-    onChange: async (row, nextState, context) => {
-      await axios.patch(`/api/users/${row.id}`, { isActive: nextState });
-      context.refresh(); // يعيد جلب البيانات بسلاسة
+import { FiEye, FiEdit3, FiTrash2, FiLock, FiUnlock } from "react-icons/fi";
+
+<AnyTable
+  data={users}
+  actionsTitle="الإجراءات" // عنوان عمود العمليات (افتراضياً: "Actions")
+  actionsWidth={280}        // عرض عمود العمليات بالبكسل للتحكم في المساحة
+  actions={[
+    // 1. مكوّن من react-icons مباشرة (أنظف طريقة: بدون أقواس JSX)
+    {
+      id: "view",
+      label: "عرض",
+      icon: FiEye, // تمرير المكوّن مباشرة
+      variant: "primary",
+      onClick: (row) => router.push(`/users/${row.id}`),
     },
-  },
-  // 2. زر عرض التفاصيل
-  {
-    id: "view",
-    label: "عرض",
-    variant: "primary",
-    onClick: (row) => router.push(`/users/${row.id}`),
-  },
-]}
+
+    // 2. عنصر JSX مع خصائص الحجم واللون وتلميح Tooltip
+    {
+      id: "edit",
+      icon: <FiEdit3 size={15} className="text-blue-400" />,
+      tooltip: "تعديل بيانات المستخدم",
+      variant: "neutral",
+      onClick: (row) => openEditModal(row),
+    },
+
+    // 3. أيقونة ونص ديناميكي يتغير حسب بيانات السطر (Dynamic Component)
+    {
+      id: "toggle-lock",
+      icon: (row) => (row.isLocked ? FiUnlock : FiLock),
+      label: (row) => (row.isLocked ? "إلغاء القفل" : "قفل الحساب"),
+      variant: (row) => (row.isLocked ? "warning" : "neutral"),
+      onClick: async (row, context) => {
+        await axios.patch(`/api/users/${row.id}/toggle-lock`);
+        context.refresh(); // إعادة جلب البيانات فوراً
+      },
+    },
+
+    // 4. إيموجي لطيف كأيقونة
+    {
+      id: "star-btn",
+      icon: "⭐",
+      tooltip: "تمييز بنجمة",
+      onClick: (row) => toggleStar(row),
+    },
+
+    // 5. مسار صورة أو SVG مخصص
+    {
+      id: "verified-badge",
+      icon: "/icons/verified.svg",
+      tooltip: "حساب موثق",
+      onClick: (row) => showBadgeModal(row),
+    },
+
+    // 4. مفتاح تبديل PATCH فوري (Instant Switch)
+    {
+      id: "active-switch",
+      type: "switch",
+      label: "تفعيل",
+      checked: (row) => row.isActive,
+      onChange: async (row, nextState, context) => {
+        await axios.patch(`/api/users/${row.id}`, { isActive: nextState });
+        context.refresh();
+      },
+    },
+
+    // 5. زر حذف بأيقونة ونافذة تأكيد مدمجة (Confirmation Modal)
+    {
+      id: "delete-btn",
+      label: "حذف",
+      icon: <FiTrash2 />,
+      variant: "danger",
+      confirmation: {
+        title: "تأكيد حذف الحساب",
+        message: (row) => `هل أنت متأكد من رغبتك في حذف "${row.name}" نهائياً؟`,
+        confirmText: "نعم، احذف",
+        cancelText: "إلغاء",
+      },
+      onClick: async (row, context) => {
+        await axios.delete(`/api/users/${row.id}`);
+        context.refresh();
+      },
+    },
+  ]}
+/>
 ```
 
 ---
@@ -954,15 +1389,298 @@ export default function SelectionPage() {
 
 ---
 
-### 💡 الحالة 10: تخصيص الألوان والثيم والوضع الليلي (Theming & Dark Mode)
+### 💡 الحالة 10: الستايلات الجاهزة المعينة (Presets) والتخصيص اليدوي الكامل لكل تفصيلة في الجدول حرفياً (Theming & Granular Customization)
+
+توفر لك مكتبة **AnyTable** نظام تصميم مزدوج:
+1. **شوية استايلات جاهزة معينة (Built-in Presets)** يختار منها المطور بكلمة واحدة (`preset="midnight"`).
+2. **تخصيص يدوي كامل لكل حاجة حرفياً** من أول البوردرات وتدوير الحواف وألوان الأزرار وترويسة الجدول وألوان الصفوف الديناميكية.
+
+---
+
+#### 🎭 1. الستايلات الجاهزة المعينة (Built-in Presets):
+يمكنك تغيير شكل وهوية الجدول بالكامل بتمرير خاصية `preset`:
+
 ```tsx
-<AnyTable
+<AnyTable preset="midnight" data={cryptoData} />
+<AnyTable preset="emerald" data={finances} />
+<AnyTable preset="ocean" data={shipments} />
+<AnyTable preset="luxury" data={vipUsers} />
+<AnyTable preset="crimson" data={incidents} />
+<AnyTable preset="minimal" data={documents} />
+<AnyTable preset="corporate" data={auditLogs} />
+```
+
+| البريسيت | الطابع الجمالي | اللون الأساسي | الاستخدام المثالي |
+| :--- | :--- | :--- | :--- |
+| **`default`** | الأزرق الكهربائي العصري + رمادي متزن | `#2667EC` | لوحات التحكم العامة، وتطبيقات SaaS المعتادة |
+| **`midnight`** | الوضع الليلي العميق + توهج نيون إنديجو | `#6366F1` | أدوات المطورين، الأمن السيبراني، ومنصات الكريبتو |
+| **`emerald`** | الأخضر الزمردي والنعناعي المنعش | `#10B981` | التكنولوجيا المالية، الفواتير، الصحة، والتحليلات |
+| **`ocean`** | الأزرق البحري العميق + سماوي متألق | `#0EA5E9` | الخدمات اللوجستية، الشحن، السفر، ومراقبة السيرفرات |
+| **`luxury`** | الذهبي والكهرمان الفاخر + أسود زجاجي | `#D97706` | فئات الـ VIP، السلع الفاخرة، والعقارات |
+| **`crimson`** | القرمزي والوردي الصارخ | `#F43F5E` | جداول الحوادث الطارئة، السجلات الخطيرة، والتنبيهات |
+| **`minimal`** | بسيط بدون حواف وبتباين عالٍ وأنيق | أحادي اللون | المقالات، واجهات Notion، والمواقع الشخصية |
+| **`corporate`** | كحلي شركات رصين بحواف كلاسيكية منظمة | `#1E40AF` | أنظمة الـ ERP، البنوك التقليدية، والمؤسسات الرسمية |
+
+---
+
+#### 🛠️ 2. التخصيص اليدوي الشامل لكل تفصيلة حرفياً (Granular Customization):
+إذا أردت وضع قيمة كل شيء بنفسك، من أول البوردر إلى ألوان الأزرار والصفوف:
+
+```tsx
+<AnyTable<Order>
+  data={orders}
+  bordered={true}  // إظهار أو إخفاء حواف الجدول بالكامل
+  compact={false}  // كثافة التباعد ('compact' | 'normal' | 'spacious')
+
+  // 1. تخصيص ترويسة الجدول <thead> بكلاسات تيلويند خاصة
+  headerClassName="bg-gradient-to-r from-purple-900 to-indigo-900 text-purple-200 font-black text-xs uppercase"
+
+  // 2. تلوين كل سطر ديناميكياً بحسب حالته
+  rowClassName={(row, index) =>
+    row.status === "Cancelled"
+      ? "bg-red-500/10 hover:bg-red-500/20 text-red-500 font-bold"
+      : row.isVip
+      ? "bg-amber-500/10 hover:bg-amber-500/20 text-amber-600"
+      : ""
+  }
+
+  // 3. التحكم الكامل في قيم الستايل والألوان والحواف
   theme={{
+    borderRadius: "0px", // زوايا حادة تماماً (Brutalist)، أو "1.5rem" لزوايا فائقة الاستدارة
+    fontFamily: "'Cairo', sans-serif", // خط مخصص للجداول
     colors: {
-      primary: "#2667EC",      // اللون الأساسي
-      borderRadius: "0.75rem", // انحناء الحواف
+      primary: "#8B5CF6",              // لون أزرار الترقيم، وعناصر البحث النشطة
+      primaryHover: "#7C3AED",         // لون الـ Hover للأزرار
+      border: "#4C1D95",               // لون حواف الجدول والخلايا
+      theadBg: "#1E1B4B",              // خلفية الترويسة
+      theadText: "#E0E7FF",            // لون خط الترويسة
+      rowHover: "rgba(139, 92, 246, 0.08)", // لون مرور الماوس على السطر
+      rowSelected: "rgba(139, 92, 246, 0.16)", // لون السطر المحدد بـ Checkbox
+      card: "#0F0A1E",                 // خلفية كارت الجدول
+    },
+    classes: {
+      tableWrapper: "border-2 border-purple-800 shadow-2xl shadow-purple-900/30",
+      searchInput: "bg-purple-950/40 border border-purple-700 text-white placeholder:text-purple-400",
+      paginationButtonActive: "bg-purple-600 text-white font-black shadow-lg shadow-purple-600/50",
     },
   }}
+/>
+```
+
+---
+
+#### 🌟 3. أين وكيف تضع الاستايل الموحد لكافة الجداول في المشروع؟
+
+لديك **3 طرق قياسية واحترافية** لتطبيق استايل موحد للمشروع كاملاً:
+
+##### الطريقة 1: استخدام المزوّد العام `AnyTableThemeProvider` في جذر المشروع (الأفضل والأنظف)
+قم بإحاطة تطبيقك بمكوّن `<AnyTableThemeProvider>` مرة واحدة في ملف الـ Layout الرئيسي:
+
+**في Next.js (داخل ملف `app/layout.tsx` أو `pages/_app.tsx`):**
+```tsx
+import "@kareemelbalshe/any-table/style.css";
+import { AnyTableThemeProvider } from "@kareemelbalshe/any-table";
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="ar" dir="rtl">
+      <body>
+        <AnyTableThemeProvider
+          theme={{
+            colors: {
+              primary: "#2667EC",        // اللون الأساسي لأزرار البحث والترقيم والعمليات
+              primaryHover: "#1E54C6",
+              card: "#0f172a",           // لون خلفية كارت الجدول
+              border: "#1e293b",         // لون الحواف الخفيفة
+            },
+            borderRadius: "1rem",        // تدوير حواف الجداول
+            density: "normal",           // كثافة التباعد: 'compact' | 'normal' | 'comfortable'
+            classes: {
+              // كلاسات Tailwind تطبق تلقائياً على كل الجداول في كل صفحات الموقع
+              tableWrapper: "rounded-2xl border border-slate-800 shadow-xl",
+              thead: "bg-slate-900/90 backdrop-blur-md text-slate-300 font-bold uppercase text-xs",
+              searchInput: "rounded-xl border border-slate-700 bg-slate-900 text-white focus:ring-primary",
+              paginationButtonActive: "bg-primary text-white shadow-md shadow-primary/30",
+            },
+          }}
+        >
+          {children}
+        </AnyTableThemeProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+**في تطبيقات Vite / React (داخل `src/main.tsx` أو `src/App.tsx`):**
+```tsx
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { AnyTableThemeProvider } from "@kareemelbalshe/any-table";
+import "@kareemelbalshe/any-table/style.css";
+import App from "./App";
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <AnyTableThemeProvider
+      theme={{
+        colors: { primary: "#7c3aed" }, // لون الهوية البنفسجي للمشروع
+        borderRadius: "0.75rem",
+      }}
+    >
+      <App />
+    </AnyTableThemeProvider>
+  </React.StrictMode>
+);
+```
+> **النتيجة السحرية:** الآن في أي صفحة تستدعي فيها `<AnyTable data={...} />`، ستجد الجدول يظهر فوراً بألوان مشروعك وهوية موقعك بدون كتابة أي إعدادات تصميم في الصفحة!
+
+---
+
+##### الطريقة 2: عبر متغيرات الـ CSS العامة (داخل `globals.css` أو `index.css`)
+إذا كنت تفضل التحكم في الألوان عبر CSS مباشرة:
+```css
+/* في ملف globals.css أو index.css الرئيسي */
+:root {
+  --any-table-primary: #2667EC;         /* لون الأزرار والعناصر الفعالة */
+  --any-table-primary-hover: #1E54C6;
+  --any-table-primary-soft: #397FF6;
+  --any-table-secondary: #39E965;       /* لون ثانوي */
+  --any-table-success: #10B981;
+  --any-table-warning: #F59E0B;
+  --any-table-danger: #EF4444;
+  --any-table-font: "Alexandria", system-ui, sans-serif; /* خط الجداول الموحد */
+}
+```
+
+---
+
+##### الطريقة 3: إنشاء مكوّن وسيط موحد للمشروع (`components/AppTable.tsx`)
+وهو أسلوب الشركات الكبرى (Enterprise Best Practice) لإنشاء مكوّن مسبق الإعدادات:
+```tsx
+// components/AppTable.tsx
+import { AnyTable, AnyTableProps } from "@kareemelbalshe/any-table";
+
+export function AppTable<TData = any>(props: AnyTableProps<TData>) {
+  return (
+    <AnyTable<TData>
+      bordered={true}
+      hoverable={true}
+      striped={false}
+      actionsTitle="الإجراءات" // عنوان عمود العمليات الموحد
+      actionsWidth={220}
+      className="shadow-sm transition-all"
+      {...props} // يسمح لأي صفحة بتجاوز أي خاصية عند الحاجة
+    />
+  );
+}
+
+// ثم في أي صفحة داخل مشروعك:
+// <AppTable data={orders} />
+```
+
+---
+
+#### 📄 ثانياً: جميع حالات الاستخدام الممكنة عند استخدام الجدول في الصفحات (All Page Use Cases)
+
+إليك كل الحالات العملية التي قد تحتاجها أثناء بناء صفحاتك:
+
+##### الحالة 1: الاستخدام التلقائي المباشر (Zero-Config)
+يرث الستايل الموحد من الـ Provider بدون أي كود إضافي:
+```tsx
+<AnyTable data={users} />
+```
+
+##### الحالة 2: تغيير لون جدول مالي أو تحذيري في صفحة محددة (Local Theme Override)
+إذا أردت جعل جدول في صفحة الحسابات والماليات باللون الأخضر (Emerald) دون التأثير على باقي جداول الموقع:
+```tsx
+<AnyTable
+  data={invoices}
+  theme={{
+    colors: {
+      primary: "#10B981", // تغيير اللون لهذا الجدول فقط
+    },
+  }}
+/>
+```
+
+##### الحالة 3: شاشات العمليات والبيانات الكثيفة (High-Density Dashboard)
+لجعل المسافات الداخلية أصغر وتثبيت الهيدر أثناء التمرير العمودي:
+```tsx
+<AnyTable
+  data={auditLogs}
+  compact={true}       // يقلل الـ padding للأسطر والخلايا لعرض كمية بيانات أكبر
+  stickyHeader={true}  // يثبت ترويسة الجدول أثناء النزول بالماوس
+/>
+```
+
+##### الحالة 4: التبديل بين الأنماط المظهرية الجاهزة (Visual Presets)
+```tsx
+<AnyTable
+  data={products}
+  bordered={false}     // إخفاء الحواف الخارجية لمظهر ناعم وبسيط
+  striped={true}       // تفعيل الصفوف المقلمة المتبادلة (Zebra Stripes)
+  hoverable={true}     // إضاءة وتمييز السطر عند الوقوف عليه بالماوس
+  className="shadow-2xl rounded-3xl" // كلاسات إضافية للكارت الخارجي
+  tableClassName="text-xs"           // تصغير حجم خط الجدول
+/>
+```
+
+##### الحالة 5: تنسيق عمود أو خلية معينة بمظهر مخصص (Per-Column & Per-Cell)
+```tsx
+<AnyTable
+  data={orders}
+  columns={[
+    { key: "id", title: "رقم الطلب", width: 100 },
+    // تخصيص الخط والمحاذاة ولون النص لعمود المبلغ
+    {
+      key: "totalAmount",
+      title: "الإجمالي",
+      align: "right",
+      className: "font-mono font-bold text-emerald-500",
+      headerClassName: "text-right",
+    },
+    // تخصيص خلية بالكامل عبر JSX
+    {
+      key: "status",
+      title: "حالة الدفع",
+      render: (val) => (
+        <span className={val === "Paid" ? "bg-emerald-500/20 text-emerald-500 px-2 py-1 rounded-full text-xs font-bold" : "bg-rose-500/20 text-rose-500 px-2 py-1 rounded-full text-xs font-bold"}>
+          {val}
+        </span>
+      ),
+    },
+  ]}
+/>
+```
+
+##### الحالة 6: التحكم في الوضع الليلي والنهاري (Dark / Light Mode)
+الجدول يتوافق تلقائياً مع كلاس `dark` في Tailwind أو مكتبات مثل `next-themes`. كما يمكنك إجبار جدول معين على وضع محدد:
+```tsx
+// إجبار هذا الجدول على وضع الـ Dark Mode دائماً
+<AnyTable data={users} theme={{ mode: "dark" }} />
+```
+
+##### الحالة 7: تخصيص أزرار العمليات (Action Buttons Styling)
+```tsx
+<AnyTable
+  data={users}
+  actions={[
+    {
+      id: "vip-btn",
+      label: "ترقية VIP",
+      icon: "⭐",
+      color: "#8B5CF6", // لون مخصص عبر Hex
+      className: "hover:scale-105 shadow-md shadow-purple-500/30",
+      onClick: (row) => upgradeUser(row),
+    },
+    {
+      id: "delete",
+      icon: "🗑️",
+      variant: "danger", // ستايل الخطر الجاهز
+      onClick: (row) => deleteUser(row),
+    },
+  ]}
 />
 ```
 

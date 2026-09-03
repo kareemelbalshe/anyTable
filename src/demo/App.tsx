@@ -1,6 +1,7 @@
 import React, { useState, useRef, useMemo } from "react";
 import { AnyTable } from "../components/AnyTable";
 import { TableInstance } from "../types/table.types";
+import { TablePreset } from "../types/theme.types";
 import {
   EnterpriseOrder,
   REAL_WORLD_ORDERS_DB,
@@ -26,6 +27,7 @@ export default function App() {
     "enterprise" | "dummy_products" | "dummy_users" | "github_repos" | "rick_morty" | "ref_controller" | "error_states"
   >("enterprise");
 
+  const [selectedPreset, setSelectedPreset] = useState<TablePreset>("default");
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [notification, setNotification] = useState<string | null>(null);
   const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState<EnterpriseOrder | null>(null);
@@ -201,7 +203,28 @@ export default function App() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-1.5 bg-gray-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700">
+              <span className="text-xs font-bold text-gray-500 dark:text-gray-400">🎨 Preset:</span>
+              <select
+                value={selectedPreset}
+                onChange={(e) => {
+                  setSelectedPreset(e.target.value as TablePreset);
+                  showToast(`Switched design preset to: ${e.target.value.toUpperCase()}`);
+                }}
+                className="bg-transparent text-xs font-black text-gray-900 dark:text-white focus:outline-none cursor-pointer pr-1"
+              >
+                <option value="default" className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">Default (Wasel Blue)</option>
+                <option value="midnight" className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">Midnight (Neon Indigo)</option>
+                <option value="emerald" className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">Emerald (Fintech Green)</option>
+                <option value="ocean" className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">Ocean (Deep Cyan)</option>
+                <option value="luxury" className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">Luxury (Champagne Gold)</option>
+                <option value="crimson" className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">Crimson (Rose Red)</option>
+                <option value="minimal" className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">Minimal (Clean Borderless)</option>
+                <option value="corporate" className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">Corporate (Enterprise Navy)</option>
+              </select>
+            </div>
+
             <a
               href="https://github.com/kareemelbalshe"
               target="_blank"
@@ -334,6 +357,7 @@ export default function App() {
 
             {/* Main Enterprise Table */}
             <AnyTable<EnterpriseOrder>
+              preset={selectedPreset}
               tableRef={enterpriseTableRef}
               title="Enterprise Orders & Logistics Fulfillment"
               subtitle="Full-featured enterprise table with server search, multi-tier status badges, instant PATCH switches, and invoice popups."
@@ -486,6 +510,7 @@ export default function App() {
                 {
                   id: "view-invoice",
                   label: "Invoice",
+                  icon: "📄",
                   variant: "primary",
                   onClick: (row) => {
                     setSelectedInvoiceOrder(row);
@@ -496,6 +521,7 @@ export default function App() {
                 {
                   id: "whatsapp",
                   label: "WhatsApp",
+                  icon: "💬",
                   variant: "success",
                   onClick: (row) => {
                     showToast(`Opening WhatsApp chat with ${row.customer.name} (${row.customer.phone})`);
@@ -506,6 +532,7 @@ export default function App() {
                 {
                   id: "cancel-order",
                   label: "Cancel",
+                  icon: "🗑️",
                   variant: "danger",
                   show: (row) => row.fulfillmentStatus !== "Cancelled" && row.fulfillmentStatus !== "Delivered",
                   confirmation: {
@@ -610,6 +637,7 @@ export default function App() {
                 {
                   id: "order-product",
                   label: "Add to Cart",
+                  icon: "🛒",
                   variant: "primary",
                   onClick: (row) => showToast(`Added "${row.title}" ($${row.price}) to cart!`),
                 },
@@ -695,6 +723,7 @@ export default function App() {
                 {
                   id: "mail-user",
                   label: "Send Message",
+                  icon: "✉️",
                   variant: "neutral",
                   onClick: (row) => showToast(`Opening message composer for ${row.email}`),
                 },
@@ -777,6 +806,7 @@ export default function App() {
                 {
                   id: "github-link",
                   label: "Open Repo",
+                  icon: "🐙",
                   variant: "primary",
                   onClick: (row) => {
                     window.open(row.html_url, "_blank");
@@ -849,6 +879,7 @@ export default function App() {
                 {
                   id: "character-details",
                   label: "Details",
+                  icon: "🔍",
                   variant: "neutral",
                   onClick: (row) => showToast(`Character: ${row.name} - Status: ${row.status} (${row.species})`),
                 },

@@ -17,6 +17,7 @@ export interface TableBodyProps<TData = any> {
   onRowClick?: (row: TData, index: number, event: React.MouseEvent<HTMLTableRowElement>) => void;
   striped?: boolean;
   hoverable?: boolean;
+  rowClassName?: string | ((row: TData, index: number) => string);
 }
 
 export const TableBody: React.FC<TableBodyProps> = ({
@@ -31,6 +32,7 @@ export const TableBody: React.FC<TableBodyProps> = ({
   onRowClick,
   striped = false,
   hoverable = true,
+  rowClassName,
 }) => {
   const theme = useAnyTableTheme();
   const hasActions = Boolean(actions && actions.length > 0);
@@ -40,6 +42,8 @@ export const TableBody: React.FC<TableBodyProps> = ({
       {rows.map((row, rowIndex) => {
         const rowKey = rowKeyResolver(row, rowIndex);
         const isSelected = selectedKeys?.has(rowKey);
+        const customRowClass =
+          typeof rowClassName === "function" ? rowClassName(row, rowIndex) : rowClassName || "";
 
         return (
           <tr
@@ -49,7 +53,7 @@ export const TableBody: React.FC<TableBodyProps> = ({
               striped && rowIndex % 2 === 1 ? "bg-gray-50/40 dark:bg-slate-800/20" : ""
             } ${hoverable ? "hover:bg-gray-50/70 dark:hover:bg-slate-800/50" : ""} ${
               isSelected ? "bg-primary/5 dark:bg-primary/10" : ""
-            } ${onRowClick ? "cursor-pointer" : ""}`}
+            } ${onRowClick ? "cursor-pointer" : ""} ${customRowClass}`}
           >
             {/* Selection Checkbox */}
             {selectable && (

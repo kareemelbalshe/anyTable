@@ -43,11 +43,14 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
     errorComponent,
     className = "",
     tableClassName = "",
+    headerClassName = "",
+    rowClassName,
     headerActions,
     showHeader = true,
     bordered = true,
     striped = false,
     hoverable = true,
+    compact = false,
     stickyHeader = false,
     tableRef,
 
@@ -353,8 +356,32 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
   const hasActions = resolvedActions.length > 0;
   const showTopToolbar = Boolean(displayTitle || subtitle || isSearchEnabled || headerActions || add);
 
+  const themeStyle = useMemo<React.CSSProperties>(() => {
+    const s: Record<string, any> = {};
+    if (theme.borderRadius) {
+      s["--any-table-radius"] = theme.borderRadius;
+    }
+    if (theme.fontFamily) {
+      s["--any-table-font"] = theme.fontFamily;
+      s.fontFamily = theme.fontFamily;
+    }
+    if (theme.colors?.primary) {
+      s["--any-table-primary"] = theme.colors.primary;
+    }
+    if (theme.colors?.primaryHover) {
+      s["--any-table-primary-hover"] = theme.colors.primaryHover;
+    }
+    if (theme.colors?.border) {
+      s["--any-table-border"] = theme.colors.border;
+    }
+    return s;
+  }, [theme]);
+
   return (
-    <div className={`any-table-wrapper ${theme.classes?.container || "w-full flex flex-col gap-4 font-sans"} ${className}`}>
+    <div
+      style={themeStyle}
+      className={`any-table-wrapper ${theme.classes?.container || "w-full flex flex-col gap-4 font-sans text-gray-900 dark:text-gray-100"} ${className}`}
+    >
       {/* Top Section Toolbar */}
       {showTopToolbar && (
         <div className="w-full flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-1">
@@ -362,20 +389,17 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
           {(displayTitle || subtitle) && (
             <div className="flex flex-col">
               {displayTitle && (
-                <h2 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-2.5">
-                  <span className="w-1.5 h-6 bg-primary rounded-full inline-block" />
+                <h3 className="text-lg font-bold tracking-tight text-gray-900 dark:text-white flex items-center gap-2">
                   {displayTitle}
-                </h2>
+                </h3>
               )}
               {subtitle && (
-                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium mt-0.5 pl-4">
-                  {subtitle}
-                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{subtitle}</p>
               )}
             </div>
           )}
 
-          {/* Right Toolbar: Search + Actions */}
+          {/* Right Toolbar Controls (Search + Header Actions) */}
           <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-start sm:justify-end ml-auto">
             {isSearchEnabled && (
               <TableSearch
@@ -411,9 +435,10 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
 
       {/* Main Table Card */}
       <div
+        style={theme.borderRadius ? { borderRadius: theme.borderRadius } : undefined}
         className={`${
-          theme.classes?.tableWrapper || "w-full overflow-x-auto rounded-2xl border bg-white dark:bg-slate-900"
-        } ${bordered ? "border border-gray-200 dark:border-gray-800" : ""}`}
+          theme.classes?.tableWrapper || "w-full overflow-x-auto rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-slate-900 shadow-sm transition-colors"
+        } ${bordered ? "border border-gray-200 dark:border-gray-800" : "border-0 shadow-none"}`}
       >
         {/* Error State */}
         {error ? (
@@ -427,6 +452,8 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
         ) : (
           <table
             className={`${theme.classes?.table || "w-full border-collapse text-left text-sm"} ${
+              compact || theme.density === "compact" ? "text-xs" : ""
+            } ${
               stickyHeader ? "relative" : ""
             } ${tableClassName}`}
           >
@@ -443,6 +470,7 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
                 allSelected={allSelected}
                 isIndeterminate={isIndeterminate}
                 onToggleSelectAll={handleToggleSelectAll}
+                headerClassName={headerClassName}
               />
             )}
 
@@ -498,6 +526,7 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
                 onRowClick={onRowClick}
                 striped={striped}
                 hoverable={hoverable}
+                rowClassName={rowClassName}
               />
             )}
           </table>
@@ -527,8 +556,11 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
  * AnyTable — The developer-facing, smart data table library for React.
  */
 export function AnyTable<TData = any>(props: AnyTableProps<TData>) {
+  if (!props.theme && !props.preset) {
+    return <AnyTableInner {...props} />;
+  }
   return (
-    <AnyTableThemeProvider theme={props.theme}>
+    <AnyTableThemeProvider theme={props.theme} preset={props.preset}>
       <AnyTableInner {...props} />
     </AnyTableThemeProvider>
   );

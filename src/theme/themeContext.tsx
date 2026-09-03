@@ -1,33 +1,42 @@
 import React, { createContext, useContext, useMemo } from "react";
-import { AnyTableTheme } from "../types/theme.types";
-import { defaultAnyTableTheme } from "./defaultTheme";
+import { AnyTableTheme, TablePreset } from "../types/theme.types";
+import { defaultAnyTableTheme, TABLE_PRESETS } from "./defaultTheme";
 
 const ThemeContext = createContext<AnyTableTheme>(defaultAnyTableTheme);
 
 export interface AnyTableThemeProviderProps {
   theme?: Partial<AnyTableTheme>;
+  preset?: TablePreset;
   children: React.ReactNode;
 }
 
 export const AnyTableThemeProvider: React.FC<AnyTableThemeProviderProps> = ({
   theme,
+  preset,
   children,
 }) => {
+  const parentTheme = useContext(ThemeContext);
+
   const mergedTheme = useMemo<AnyTableTheme>(() => {
-    if (!theme) return defaultAnyTableTheme;
+    const base = parentTheme || defaultAnyTableTheme;
+    const presetTheme = preset && TABLE_PRESETS[preset] ? TABLE_PRESETS[preset] : {};
+
     return {
-      ...defaultAnyTableTheme,
-      ...theme,
+      ...base,
+      ...presetTheme,
+      ...(theme || {}),
       colors: {
-        ...defaultAnyTableTheme.colors,
-        ...(theme.colors || {}),
+        ...base.colors,
+        ...(presetTheme.colors || {}),
+        ...(theme?.colors || {}),
       },
       classes: {
-        ...defaultAnyTableTheme.classes,
-        ...(theme.classes || {}),
+        ...base.classes,
+        ...(presetTheme.classes || {}),
+        ...(theme?.classes || {}),
       },
     };
-  }, [theme]);
+  }, [parentTheme, preset, theme]);
 
   return (
     <ThemeContext.Provider value={mergedTheme}>

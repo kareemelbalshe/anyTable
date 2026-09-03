@@ -2,7 +2,7 @@ import React from "react";
 import { ColumnDef, SortDirection } from "./column.types";
 import { TableAction, SwitchAction } from "./action.types";
 import { ApiConfig, PaginationMeta } from "./api.types";
-import { AnyTableTheme } from "./theme.types";
+import { AnyTableTheme, TablePreset } from "./theme.types";
 
 export type RowKeyResolver<TData = any> =
   | (keyof TData & string)
@@ -233,6 +233,11 @@ export interface AnyTableProps<TData = any> {
     | ((error: any, retry: () => void) => React.ReactNode);
 
   /**
+   * Built-in visual theme preset: 'default' | 'midnight' | 'emerald' | 'ocean' | 'luxury' | 'crimson' | 'minimal' | 'corporate'.
+   */
+  preset?: TablePreset;
+
+  /**
    * Custom theme tokens and class overrides.
    */
   theme?: Partial<AnyTableTheme>;
@@ -246,6 +251,16 @@ export interface AnyTableProps<TData = any> {
    * Custom CSS classes for the `<table>` element.
    */
   tableClassName?: string;
+
+  /**
+   * Custom CSS classes for the `<thead>` element.
+   */
+  headerClassName?: string;
+
+  /**
+   * Custom CSS classes for each `<tr>` row or dynamic class generator based on row data.
+   */
+  rowClassName?: string | ((row: TData, index: number) => string);
 
   /**
    * Custom action buttons to place in the table top header (e.g. "Add User", "Export CSV").
