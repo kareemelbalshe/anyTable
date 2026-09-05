@@ -186,8 +186,11 @@ export const EnterpriseOrdersTab: React.FC<EnterpriseOrdersTabProps> = ({
               <div className="flex items-center gap-3">
                 <img
                   src={row.customer.avatar}
-                  alt="Customer"
-                  className="w-9 h-9 rounded-full object-cover border border-gray-200 dark:border-gray-700 shadow-sm"
+                  alt={row.customer.name}
+                  className="w-9 h-9 rounded-full object-cover border border-gray-200 dark:border-gray-700 shadow-sm shrink-0"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
+                  }}
                 />
                 <div>
                   <div className="font-bold text-xs text-gray-900 dark:text-white flex items-center gap-1.5">

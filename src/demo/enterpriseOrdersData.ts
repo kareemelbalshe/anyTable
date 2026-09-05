@@ -86,6 +86,22 @@ const CARRIERS = ["Aramex Express", "DHL Priority", "Bosta Logistics", "FedEx Ca
 const PAYMENT_METHODS = ["Credit Card (Visa)", "Mastercard", "Vodafone Cash", "Cash on Delivery", "InstaPay"] as const;
 const PAYMENT_STATUSES = ["Paid", "Pending", "Paid", "Paid", "Refunded", "Failed"] as const;
 const FULFILLMENT_STATUSES = ["Delivered", "In Transit", "Processing", "Out for Delivery", "Delivered"] as const;
+const getInitialsAvatar = (name: string, index: number) => {
+  const parts = name.split(" ");
+  const initials = ((parts[0]?.[0] || "") + (parts[1]?.[0] || "")).toUpperCase();
+  const colors = [
+    ["#3b82f6", "#1d4ed8"],
+    ["#10b981", "#059669"],
+    ["#8b5cf6", "#6d28d9"],
+    ["#f59e0b", "#d97706"],
+    ["#ec4899", "#be185d"],
+    ["#06b6d4", "#0891b2"],
+    ["#6366f1", "#4f46e5"],
+    ["#14b8a6", "#0d9488"],
+  ];
+  const [c1, c2] = colors[index % colors.length];
+  return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' width='40' height='40'%3E%3Cdefs%3E%3ClinearGradient id='ord_${index}' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='${encodeURIComponent(c1)}'/%3E%3Cstop offset='100%25' stop-color='${encodeURIComponent(c2)}'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='20' cy='20' r='20' fill='url(%23ord_${index})'/%3E%3Ctext x='20' y='25' font-family='system-ui,-apple-system,sans-serif' font-size='13' font-weight='700' fill='white' text-anchor='middle'%3E${encodeURIComponent(initials)}%3C/text%3E%3C/svg%3E`;
+};
 
 // Generate 120 rich, realistic enterprise orders
 export const REAL_WORLD_ORDERS_DB: EnterpriseOrder[] = Array.from({ length: 120 }).map((_, idx) => {
@@ -128,7 +144,7 @@ export const REAL_WORLD_ORDERS_DB: EnterpriseOrder[] = Array.from({ length: 120 
       name: cust.name,
       email: cust.email,
       phone: `+20 10${Math.floor(10000000 + Math.random() * 89999999)}`,
-      avatar: `https://i.pravatar.cc/150?u=${cust.name.replace(/\s+/g, "")}${idx % 8}`,
+      avatar: getInitialsAvatar(cust.name, idx),
       tier: cust.tier as any,
     },
     items,

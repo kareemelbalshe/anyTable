@@ -51,7 +51,10 @@ export const SaaSSubscriptionsTab: React.FC<SaaSSubscriptionsTabProps> = ({
                 <img
                   src={row.logo}
                   alt={row.company}
-                  className="w-9 h-9 rounded-xl object-cover border border-gray-200 dark:border-gray-700 shadow-sm"
+                  className="w-9 h-9 rounded-xl object-cover border border-gray-200 dark:border-gray-700 shadow-sm shrink-0"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%236366f1'/%3E%3Ctext x='20' y='25' font-family='sans-serif' font-size='16' font-weight='bold' fill='white' text-anchor='middle'%3E🏢%3C/text%3E%3C/svg%3E";
+                  }}
                 />
                 <div>
                   <div className="font-bold text-xs text-gray-900 dark:text-white">{row.company}</div>
