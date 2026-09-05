@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useMemo } from "react";
 import { AnyTableTheme, TablePreset } from "../types/theme.types";
-import { defaultAnyTableTheme, TABLE_PRESETS } from "./defaultTheme";
+import { defaultAnyTableTheme } from "./defaultTheme";
+import { TABLE_PRESETS } from "./presets";
 
 const ThemeContext = createContext<AnyTableTheme>(defaultAnyTableTheme);
 

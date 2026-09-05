@@ -1,25 +1,7 @@
-import { AnyTableTheme, ThemeColors } from "../types/theme.types";
+import { AnyTableTheme } from "../types/theme.types";
+import { DEFAULT_THEME_COLORS, TABLE_PRESETS } from "./presets";
 
-export const DEFAULT_THEME_COLORS: ThemeColors = {
-  primary: "#2667EC",
-  primaryHover: "#1E54C6",
-  primaryLight: "#397FF6",
-  secondary: "#39E965",
-  success: "#10B981",
-  warning: "#F59E0B",
-  danger: "#EF4444",
-  info: "#0EA5E9",
-  scaffold: "#0F172A",
-  card: "#1E293B",
-  cardSecondary: "#334155",
-  border: "#334155",
-  textPrimary: "#F8FAFC",
-  textSecondary: "#94A3B8",
-  textMuted: "#64748B",
-  inputBg: "#1E293B",
-  rowHover: "rgba(38, 103, 236, 0.04)",
-  rowSelected: "rgba(38, 103, 236, 0.08)",
-};
+export { DEFAULT_THEME_COLORS, TABLE_PRESETS };
 
 export const defaultAnyTableTheme: AnyTableTheme = {
   mode: "auto",
@@ -50,5 +32,3 @@ export const defaultAnyTableTheme: AnyTableTheme = {
       "h-9 px-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 text-sm font-medium text-gray-700 dark:text-gray-300 focus:outline-none focus:border-primary cursor-pointer",
   },
 };
-
-export { TABLE_PRESETS } from "./presets";

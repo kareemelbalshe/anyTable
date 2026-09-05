@@ -1,5 +1,25 @@
-import { AnyTableTheme, TablePreset } from "../types/theme.types";
-import { DEFAULT_THEME_COLORS } from "./defaultTheme";
+import { AnyTableTheme, TablePreset, ThemeColors } from "../types/theme.types";
+
+export const DEFAULT_THEME_COLORS: ThemeColors = {
+  primary: "#2667EC",
+  primaryHover: "#1E54C6",
+  primaryLight: "#397FF6",
+  secondary: "#39E965",
+  success: "#10B981",
+  warning: "#F59E0B",
+  danger: "#EF4444",
+  info: "#0EA5E9",
+  scaffold: "#0F172A",
+  card: "#1E293B",
+  cardSecondary: "#334155",
+  border: "#334155",
+  textPrimary: "#F8FAFC",
+  textSecondary: "#94A3B8",
+  textMuted: "#64748B",
+  inputBg: "#1E293B",
+  rowHover: "rgba(38, 103, 236, 0.04)",
+  rowSelected: "rgba(38, 103, 236, 0.08)",
+};
 
 export const TABLE_PRESETS: Record<TablePreset, Partial<AnyTableTheme>> = {
   default: {

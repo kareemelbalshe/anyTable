@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { TablePreset } from "../types/theme.types";
-import { TABLE_PRESETS } from "../theme/defaultTheme";
+import { TABLE_PRESETS } from "../theme/presets";
 import { EnterpriseOrder } from "./enterpriseOrdersData";
 import { DemoHeader } from "./components/DemoHeader";
 import { InvoiceModal } from "./components/InvoiceModal";
