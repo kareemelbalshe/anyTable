@@ -253,3 +253,59 @@ export const PhoneRenderer: React.FC<{ value: any; column: ColumnDef }> = ({ val
     </a>
   );
 };
+
+export const ProgressRenderer: React.FC<{ value: any; column: ColumnDef }> = ({ value }) => {
+  if (value === null || value === undefined || isNaN(Number(value))) {
+    return <FallbackPlaceholder />;
+  }
+  const pct = Math.min(100, Math.max(0, Math.round(Number(value))));
+  const barColor =
+    pct >= 80
+      ? "bg-emerald-500"
+      : pct >= 50
+      ? "bg-blue-500"
+      : pct >= 30
+      ? "bg-amber-500"
+      : "bg-rose-500";
+
+  return (
+    <div className="flex items-center gap-2.5 min-w-[120px]">
+      <div className="flex-1 h-2 rounded-full bg-gray-200 dark:bg-slate-700 overflow-hidden">
+        <div
+          className={`h-full rounded-full ${barColor} transition-all duration-500`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <span className="font-mono text-xs font-bold text-gray-700 dark:text-gray-300 w-9 text-right">
+        {pct}%
+      </span>
+    </div>
+  );
+};
+
+export const RatingRenderer: React.FC<{ value: any; column: ColumnDef }> = ({ value }) => {
+  if (value === null || value === undefined || isNaN(Number(value))) {
+    return <FallbackPlaceholder />;
+  }
+  const rating = Number(value);
+  return (
+    <div className="inline-flex items-center gap-1.5 font-medium text-xs text-amber-500">
+      <span className="text-sm">★</span>
+      <span className="font-bold text-gray-900 dark:text-gray-100">{rating.toFixed(1)}</span>
+      <span className="text-gray-400 dark:text-gray-500 text-[10px]">/ 5</span>
+    </div>
+  );
+};
+
+export const BadgeRenderer: React.FC<{ value: any; column: ColumnDef }> = ({ value }) => {
+  if (value === null || value === undefined || value === "") {
+    return <FallbackPlaceholder />;
+  }
+  const str = String(value);
+  return (
+    <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-bold bg-primary/10 text-primary border border-primary/20">
+      {str}
+    </span>
+  );
+};
+

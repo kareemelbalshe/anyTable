@@ -12,6 +12,9 @@ export type DataType =
   | "email"
   | "phone"
   | "status"
+  | "badge"
+  | "progress"
+  | "rating"
   | "array"
   | "object"
   | "custom";

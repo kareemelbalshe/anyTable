@@ -1,3 +1,6 @@
 npm version patch   # للتحديثات البسيطة وإصلاح الأخطاء (1.0.1)
 npm version minor   # للميزات الجديدة المتوافقة (1.1.0)
 npm publish
+
+npm version patch
+npm publish

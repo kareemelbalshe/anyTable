@@ -58,16 +58,10 @@ export const TABLE_PRESETS: Record<string, Partial<AnyTableTheme>> = {
     density: "normal",
   },
   midnight: {
-    mode: "dark",
     colors: {
       primary: "#6366F1",
       primaryHover: "#4F46E5",
       primaryLight: "#818CF8",
-      card: "#090D16",
-      cardSecondary: "#111827",
-      border: "#1E293B",
-      textPrimary: "#F8FAFC",
-      textSecondary: "#94A3B8",
       rowHover: "rgba(99, 102, 241, 0.08)",
       rowSelected: "rgba(99, 102, 241, 0.16)",
       theadBg: "#0F172A",
@@ -75,9 +69,12 @@ export const TABLE_PRESETS: Record<string, Partial<AnyTableTheme>> = {
     },
     borderRadius: "1.25rem",
     classes: {
-      tableWrapper: "w-full overflow-x-auto rounded-2xl border border-indigo-950/70 bg-[#090D16] shadow-2xl shadow-indigo-950/30",
-      thead: "bg-[#0F172A]/90 backdrop-blur-md border-b border-indigo-950/80 text-indigo-200 font-bold uppercase text-xs tracking-wider",
-      searchInput: "w-full pl-10 pr-10 py-2.5 rounded-xl border border-indigo-900/50 bg-[#111827] text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500",
+      tableWrapper:
+        "w-full overflow-x-auto rounded-2xl border border-indigo-200 dark:border-indigo-950/70 bg-indigo-50/30 dark:bg-[#090D16] shadow-xl shadow-indigo-500/5 dark:shadow-indigo-950/30 transition-colors",
+      thead:
+        "bg-indigo-100/60 dark:bg-[#0F172A]/90 backdrop-blur-md border-b border-indigo-200 dark:border-indigo-950/80 text-indigo-900 dark:text-indigo-200 font-bold uppercase text-xs tracking-wider",
+      searchInput:
+        "w-full pl-10 pr-10 py-2.5 rounded-xl border border-indigo-200 dark:border-indigo-900/50 bg-white dark:bg-[#111827] text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500",
       paginationButtonActive: "bg-indigo-600 text-white shadow-lg shadow-indigo-600/30",
     },
   },
@@ -94,7 +91,7 @@ export const TABLE_PRESETS: Record<string, Partial<AnyTableTheme>> = {
     },
     borderRadius: "1rem",
     classes: {
-      tableWrapper: "w-full overflow-x-auto rounded-2xl border border-emerald-500/20 bg-white dark:bg-slate-900 shadow-lg shadow-emerald-500/5",
+      tableWrapper: "w-full overflow-x-auto rounded-2xl border border-emerald-500/20 bg-white dark:bg-slate-900 shadow-lg shadow-emerald-500/5 transition-colors",
       thead: "bg-emerald-500/10 dark:bg-emerald-950/30 border-b border-emerald-500/20 text-emerald-800 dark:text-emerald-300 font-bold uppercase text-xs",
       searchInput: "w-full pl-10 pr-10 py-2.5 rounded-xl border border-emerald-500/30 bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-emerald-500/40 focus:border-emerald-500",
       paginationButtonActive: "bg-emerald-600 text-white shadow-md shadow-emerald-600/30",
@@ -113,7 +110,7 @@ export const TABLE_PRESETS: Record<string, Partial<AnyTableTheme>> = {
     },
     borderRadius: "1rem",
     classes: {
-      tableWrapper: "w-full overflow-x-auto rounded-2xl border border-sky-500/20 bg-white dark:bg-slate-900 shadow-lg shadow-sky-500/5",
+      tableWrapper: "w-full overflow-x-auto rounded-2xl border border-sky-500/20 bg-white dark:bg-slate-900 shadow-lg shadow-sky-500/5 transition-colors",
       thead: "bg-sky-500/10 dark:bg-sky-950/30 border-b border-sky-500/20 text-sky-800 dark:text-sky-300 font-bold uppercase text-xs",
       searchInput: "w-full pl-10 pr-10 py-2.5 rounded-xl border border-sky-500/30 bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-sky-500/40 focus:border-sky-500",
       paginationButtonActive: "bg-sky-500 text-white shadow-md shadow-sky-500/30",
@@ -131,9 +128,9 @@ export const TABLE_PRESETS: Record<string, Partial<AnyTableTheme>> = {
     },
     borderRadius: "1.25rem",
     classes: {
-      tableWrapper: "w-full overflow-x-auto rounded-3xl border border-amber-500/30 bg-white dark:bg-[#120F0B] shadow-2xl shadow-amber-500/10",
-      thead: "bg-amber-500/10 dark:bg-amber-950/30 border-b border-amber-500/20 text-amber-800 dark:text-amber-300 font-bold uppercase text-xs tracking-wider",
-      searchInput: "w-full pl-10 pr-10 py-2.5 rounded-xl border border-amber-500/30 bg-white dark:bg-[#1A1612] text-gray-900 dark:text-amber-100 focus:ring-amber-500/40 focus:border-amber-500",
+      tableWrapper: "w-full overflow-x-auto rounded-3xl border border-amber-300/60 dark:border-amber-500/30 bg-amber-50/30 dark:bg-[#120F0B] shadow-xl shadow-amber-500/10 transition-colors",
+      thead: "bg-amber-100/70 dark:bg-amber-950/30 border-b border-amber-300/60 dark:border-amber-500/20 text-amber-900 dark:text-amber-300 font-bold uppercase text-xs tracking-wider",
+      searchInput: "w-full pl-10 pr-10 py-2.5 rounded-xl border border-amber-300/60 dark:border-amber-500/30 bg-white dark:bg-[#1A1612] text-gray-900 dark:text-amber-100 focus:ring-amber-500/40 focus:border-amber-500",
       paginationButtonActive: "bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-md shadow-amber-500/30 font-black",
     },
   },

@@ -14,6 +14,9 @@ import {
   UrlRenderer,
   EmailRenderer,
   PhoneRenderer,
+  ProgressRenderer,
+  RatingRenderer,
+  BadgeRenderer,
 } from "./DefaultRenderers";
 
 export interface CellRendererProps<TData = any> {
@@ -51,6 +54,12 @@ export const CellRenderer: React.FC<CellRendererProps> = ({ row, column, rowInde
       return <ImageRenderer value={value} column={column} />;
     case "status":
       return <StatusRenderer value={value} column={column} />;
+    case "progress":
+      return <ProgressRenderer value={value} column={column} />;
+    case "rating":
+      return <RatingRenderer value={value} column={column} />;
+    case "badge":
+      return <BadgeRenderer value={value} column={column} />;
     case "array":
       return <ArrayRenderer value={value} column={column} />;
     case "object":
