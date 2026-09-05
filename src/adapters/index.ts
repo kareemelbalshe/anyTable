@@ -3,3 +3,4 @@ export * from "./paginationAdapter";
 export * from "./apiAdapter";
 export * from "./searchAdapter";
 export * from "./sortAdapter";
+export * from "./legacyActionsAdapter";

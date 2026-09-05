@@ -5,6 +5,7 @@ export interface TableEmptyStateProps {
   description?: string;
   isSearchActive?: boolean;
   onClearSearch?: () => void;
+  colSpan?: number;
 }
 
 export const TableEmptyState: React.FC<TableEmptyStateProps> = ({
@@ -12,13 +13,14 @@ export const TableEmptyState: React.FC<TableEmptyStateProps> = ({
   description,
   isSearchActive = false,
   onClearSearch,
+  colSpan,
 }) => {
   const defaultTitle = isSearchActive ? "No matching records found" : "No data available";
   const defaultDescription = isSearchActive
     ? "Try adjusting your search criteria or clear the search filter."
     : "There are currently no records to display.";
 
-  return (
+  const content = (
     <div className="w-full py-16 px-6 flex flex-col items-center justify-center text-center any-table-fade-in">
       <div className="w-16 h-16 mb-4 rounded-2xl bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-gray-500 flex items-center justify-center text-3xl shadow-inner">
         {isSearchActive ? "🔍" : "📂"}
@@ -43,4 +45,18 @@ export const TableEmptyState: React.FC<TableEmptyStateProps> = ({
       )}
     </div>
   );
+
+  if (colSpan !== undefined) {
+    return (
+      <tbody>
+        <tr>
+          <td colSpan={colSpan} className="p-0">
+            {content}
+          </td>
+        </tr>
+      </tbody>
+    );
+  }
+
+  return content;
 };

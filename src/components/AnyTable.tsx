@@ -1,14 +1,15 @@
 import React, { useState, useMemo, useCallback } from "react";
 import { AnyTableProps, TableState } from "../types/table.types";
-import { TableAction } from "../types/action.types";
 import { resolveColumns } from "../columns/columnResolver";
+import { resolveTableActions } from "../adapters/legacyActionsAdapter";
 import { useAnyTableSearch } from "../hooks/useAnyTableSearch";
 import { useAnyTableSorting } from "../hooks/useAnyTableSorting";
 import { useAnyTablePagination } from "../hooks/useAnyTablePagination";
 import { useAnyTableData } from "../hooks/useAnyTableData";
 import { useAnyTableController } from "../hooks/useAnyTableController";
+import { useAnyTableSelection } from "../hooks/useAnyTableSelection";
 import { AnyTableThemeProvider, useAnyTableTheme } from "../theme/themeContext";
-import { TableSearch } from "./TableSearch";
+import { TableToolbar } from "./TableToolbar";
 import { TableHeader } from "./TableHeader";
 import { TableBody } from "./TableBody";
 import { TablePagination } from "./TablePagination";
@@ -91,7 +92,6 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
       thead,
       headerData,
     });
-    // Filter hidden columns
     return cols.filter((col) => {
       if (typeof col.hidden === "function") {
         return !col.hidden({ data: resolvedData || [] });
@@ -110,7 +110,6 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
         const val = getNestedValue(row, rowKey);
         if (val !== undefined && val !== null) return val;
       }
-      // Automatic fallback lookup
       const defaultId = (row as any)?._id ?? (row as any)?.id ?? (row as any)?.key;
       return defaultId !== undefined && defaultId !== null ? defaultId : index;
     },
@@ -138,97 +137,39 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
   } = useAnyTableSorting({ config: sorting });
 
   // 5. Build Actions (Combining explicit actions and legacy Wasel actions)
-  const resolvedActions = useMemo<TableAction<TData>[]>(() => {
-    const list: TableAction<TData>[] = [...(explicitActions || [])];
+  const resolvedActions = useMemo(
+    () =>
+      resolveTableActions<TData>({
+        explicitActions,
+        buttons,
+        block,
+        handleBlock,
+        view,
+        linkView,
+        viewHandler,
+        edit,
+        linkEdit,
+        editHandler,
+        del,
+        handleDelete,
+      }),
+    [
+      explicitActions,
+      buttons,
+      block,
+      handleBlock,
+      view,
+      linkView,
+      viewHandler,
+      edit,
+      linkEdit,
+      editHandler,
+      del,
+      handleDelete,
+    ]
+  );
 
-    // Convert legacy buttons
-    if (buttons && Array.isArray(buttons)) {
-      buttons.forEach((btn, idx) => {
-        list.push({
-          id: `legacy-btn-${idx}`,
-          label: btn.label,
-          icon: btn.icon,
-          className: btn.className,
-          show: btn.show,
-          hide: btn.hide,
-          onClick: (row) => btn.onClick(row),
-        });
-      });
-    }
-
-    // Convert legacy Block action
-    if (block && handleBlock) {
-      list.push({
-        id: "legacy-block",
-        label: (row: any) => (row.isBanned || !row.isActive ? "Unblock" : "Block"),
-        variant: (row: any) => (row.isBanned || !row.isActive ? "success" : "danger"),
-        onClick: (row: any) => handleBlock(row?._id || row?.id),
-      });
-    }
-
-    // Convert legacy View action
-    if (view && (viewHandler || linkView)) {
-      list.push({
-        id: "legacy-view",
-        label: "View",
-        variant: "primary",
-        onClick: (row: any) => {
-          const id = row?._id || row?.id;
-          if (viewHandler) viewHandler(id);
-          else if (linkView && typeof window !== "undefined") {
-            window.location.href = `${linkView}/${id}`;
-          }
-        },
-      });
-    }
-
-    // Convert legacy Edit action
-    if (edit && (editHandler || linkEdit)) {
-      list.push({
-        id: "legacy-edit",
-        label: "Edit",
-        variant: "info",
-        onClick: (row: any) => {
-          const id = row?._id || row?.id;
-          if (editHandler) editHandler(id);
-          else if (linkEdit && typeof window !== "undefined") {
-            window.location.href = `${linkEdit}/${id}`;
-          }
-        },
-      });
-    }
-
-    // Convert legacy Delete action
-    if (del && handleDelete) {
-      list.push({
-        id: "legacy-del",
-        label: "Delete",
-        variant: "danger",
-        confirmation: {
-          title: "Delete Item",
-          message: "Are you sure you want to delete this record?",
-        },
-        onClick: (row: any) => handleDelete(row?._id || row?.id),
-      });
-    }
-
-    return list;
-  }, [
-    explicitActions,
-    buttons,
-    block,
-    handleBlock,
-    view,
-    linkView,
-    viewHandler,
-    edit,
-    linkEdit,
-    editHandler,
-    del,
-    handleDelete,
-  ]);
-
-  // Initial Pagination Hooks
+  // Initial Pagination State
   const [activePage, setActivePage] = useState(1);
   const [activePageSize, setActivePageSize] = useState(10);
 
@@ -272,54 +213,30 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
     },
   });
 
-  // 7. Selection Management
-  const [selectedKeys, setSelectedKeys] = useState<Set<string | number>>(new Set());
-
-  const handleToggleSelectRow = useCallback(
-    (key: string | number, row: TData) => {
-      setSelectedKeys((prev) => {
-        const next = new Set(prev);
-        if (next.has(key)) next.delete(key);
-        else next.add(key);
-
-        if (onSelectionChange) {
-          const selectedRows = rows.filter((r, idx) => next.has(rowKeyResolver(r, idx)));
-          onSelectionChange(selectedRows, Array.from(next));
-        }
-        return next;
-      });
-    },
-    [rows, rowKeyResolver, onSelectionChange]
-  );
-
-  const handleToggleSelectAll = useCallback(() => {
-    if (selectedKeys.size === rows.length && rows.length > 0) {
-      setSelectedKeys(new Set());
-      onSelectionChange?.([], []);
-    } else {
-      const allKeys = new Set(rows.map((r, idx) => rowKeyResolver(r, idx)));
-      setSelectedKeys(allKeys);
-      onSelectionChange?.(rows, Array.from(allKeys));
-    }
-  }, [rows, selectedKeys.size, rowKeyResolver, onSelectionChange]);
-
-  const clearSelection = useCallback(() => {
-    setSelectedKeys(new Set());
-    onSelectionChange?.([], []);
-  }, [onSelectionChange]);
-
-  const allSelected = rows.length > 0 && selectedKeys.size === rows.length;
-  const isIndeterminate = selectedKeys.size > 0 && selectedKeys.size < rows.length;
+  // 7. Selection Hook
+  const {
+    selectedKeys,
+    selectedRows,
+    onToggleSelectRow,
+    handleToggleSelectAll,
+    clearSelection,
+    allSelected,
+    isIndeterminate,
+  } = useAnyTableSelection<TData>({
+    rows,
+    rowKeyResolver,
+    onSelectionChange,
+  });
 
   const actionContext = useMemo(
     () => ({
       refresh,
       loading,
       page,
-      selectedRows: rows.filter((r, idx) => selectedKeys.has(rowKeyResolver(r, idx))),
+      selectedRows,
       setPage,
     }),
-    [refresh, loading, page, rows, selectedKeys, rowKeyResolver, setPage]
+    [refresh, loading, page, selectedRows, setPage]
   );
 
   // 8. Controller Ref Exposure
@@ -333,7 +250,7 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
     setPageSize,
     setSearch,
     setSorting,
-    selectedRows: actionContext.selectedRows,
+    selectedRows,
     clearSelection,
     getState: (): TableState<TData> => ({
       data: rows,
@@ -347,33 +264,24 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
       sortBy,
       sortOrder,
       selectedRowKeys: Array.from(selectedKeys),
-      selectedRows: actionContext.selectedRows,
+      selectedRows,
       isServerMode,
     }),
   });
 
   const displayTitle = title || titleHeader;
   const hasActions = resolvedActions.length > 0;
-  const showTopToolbar = Boolean(displayTitle || subtitle || isSearchEnabled || headerActions || add);
 
   const themeStyle = useMemo<React.CSSProperties>(() => {
     const s: Record<string, any> = {};
-    if (theme.borderRadius) {
-      s["--any-table-radius"] = theme.borderRadius;
-    }
+    if (theme.borderRadius) s["--any-table-radius"] = theme.borderRadius;
     if (theme.fontFamily) {
       s["--any-table-font"] = theme.fontFamily;
       s.fontFamily = theme.fontFamily;
     }
-    if (theme.colors?.primary) {
-      s["--any-table-primary"] = theme.colors.primary;
-    }
-    if (theme.colors?.primaryHover) {
-      s["--any-table-primary-hover"] = theme.colors.primaryHover;
-    }
-    if (theme.colors?.border) {
-      s["--any-table-border"] = theme.colors.border;
-    }
+    if (theme.colors?.primary) s["--any-table-primary"] = theme.colors.primary;
+    if (theme.colors?.primaryHover) s["--any-table-primary-hover"] = theme.colors.primaryHover;
+    if (theme.colors?.border) s["--any-table-border"] = theme.colors.border;
     return s;
   }, [theme]);
 
@@ -383,62 +291,28 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
       className={`any-table-wrapper ${theme.classes?.container || "w-full flex flex-col gap-4 font-sans text-gray-900 dark:text-gray-100"} ${className}`}
     >
       {/* Top Section Toolbar */}
-      {showTopToolbar && (
-        <div className="w-full flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-1">
-          {/* Title & Subtitle */}
-          {(displayTitle || subtitle) && (
-            <div className="flex flex-col">
-              {displayTitle && (
-                <h3 className="text-lg font-bold tracking-tight text-gray-900 dark:text-white flex items-center gap-2">
-                  {displayTitle}
-                </h3>
-              )}
-              {subtitle && (
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{subtitle}</p>
-              )}
-            </div>
-          )}
+      <TableToolbar
+        displayTitle={displayTitle}
+        subtitle={subtitle}
+        isSearchEnabled={isSearchEnabled}
+        searchQuery={searchQuery}
+        setSearch={setSearch}
+        clearSearch={clearSearch}
+        isDebouncing={isDebouncing}
+        searchPlaceholder={searchConfig.placeholder}
+        headerActions={headerActions}
+        add={add}
+        linkAdd={linkAdd}
+        addHandler={addHandler}
+      />
 
-          {/* Right Toolbar Controls (Search + Header Actions) */}
-          <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-start sm:justify-end ml-auto">
-            {isSearchEnabled && (
-              <TableSearch
-                value={searchQuery}
-                onChange={setSearch}
-                onClear={clearSearch}
-                isDebouncing={isDebouncing}
-                placeholder={searchConfig.placeholder}
-              />
-            )}
-
-            {headerActions}
-
-            {/* Legacy Add Button */}
-            {add && (
-              <button
-                type="button"
-                onClick={() => {
-                  if (addHandler) addHandler();
-                  else if (linkAdd && typeof window !== "undefined") {
-                    window.location.href = linkAdd;
-                  }
-                }}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white text-xs sm:text-sm font-bold hover:bg-primary-soft transition-all shadow-sm shadow-primary/20 active:scale-95 whitespace-nowrap"
-              >
-                <span>＋</span>
-                <span>Add {displayTitle || "Record"}</span>
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Main Table Card */}
+      {/* Table Container Box */}
       <div
         style={theme.borderRadius ? { borderRadius: theme.borderRadius } : undefined}
         className={`${
-          theme.classes?.tableWrapper || "w-full overflow-x-auto rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-slate-900 shadow-sm transition-colors"
-        } ${bordered ? "border border-gray-200 dark:border-gray-800" : "border-0 shadow-none"}`}
+          theme.classes?.tableWrapper ||
+          "w-full overflow-x-auto rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-slate-900 shadow-sm transition-colors"
+        } ${!bordered ? "border-0 shadow-none" : ""}`}
       >
         {/* Error State */}
         {error ? (
@@ -474,46 +348,29 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
               />
             )}
 
-            {/* Loading State Skeleton */}
+            {/* Loading Skeleton */}
             {loading && rows.length === 0 ? (
               loadingComponent ? (
-                <tbody>
-                  <tr>
-                    <td colSpan={resolvedColumns.length + (selectable ? 1 : 0) + (hasActions ? 1 : 0)}>
-                      {loadingComponent}
-                    </td>
-                  </tr>
-                </tbody>
+                loadingComponent
               ) : (
                 <TableSkeleton
-                  columnsCount={resolvedColumns.length + (selectable ? 1 : 0)}
+                  columnsCount={resolvedColumns.length + (selectable ? 1 : 0) + (hasActions ? 1 : 0)}
                   rowsCount={pageSize || 5}
-                  hasActions={hasActions}
                 />
               )
             ) : rows.length === 0 ? (
-              /* Empty State */
-              <tbody>
-                <tr>
-                  <td
-                    colSpan={resolvedColumns.length + (selectable ? 1 : 0) + (hasActions ? 1 : 0)}
-                    className="p-0"
-                  >
-                    {emptyComponent ? (
-                      emptyComponent
-                    ) : (
-                      <TableEmptyState
-                        title={emptyTitle}
-                        description={emptyDescription}
-                        isSearchActive={Boolean(debouncedSearch)}
-                        onClearSearch={clearSearch}
-                      />
-                    )}
-                  </td>
-                </tr>
-              </tbody>
+              // Empty State
+              emptyComponent ? (
+                emptyComponent
+              ) : (
+                <TableEmptyState
+                  title={emptyTitle}
+                  description={emptyDescription}
+                  colSpan={resolvedColumns.length + (selectable ? 1 : 0) + (hasActions ? 1 : 0)}
+                />
+              )
             ) : (
-              /* Body Rows */
+              // Table Body
               <TableBody
                 rows={rows}
                 columns={resolvedColumns}
@@ -522,7 +379,7 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
                 rowKeyResolver={rowKeyResolver}
                 selectable={selectable}
                 selectedKeys={selectedKeys}
-                onToggleSelectRow={handleToggleSelectRow}
+                onToggleSelectRow={onToggleSelectRow}
                 onRowClick={onRowClick}
                 striped={striped}
                 hoverable={hoverable}
@@ -533,8 +390,8 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
         )}
       </div>
 
-      {/* Pagination Bar */}
-      {isPaginationEnabled && !error && (
+      {/* Pagination Controls */}
+      {isPaginationEnabled && (
         <TablePagination
           page={page}
           pageSize={pageSize}

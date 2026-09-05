@@ -6,6 +6,7 @@ export { default } from "./components/AnyTable";
 export { TableHeader } from "./components/TableHeader";
 export { TableBody } from "./components/TableBody";
 export { TableSearch } from "./components/TableSearch";
+export { TableToolbar } from "./components/TableToolbar";
 export { TablePagination } from "./components/TablePagination";
 export { TableSkeleton } from "./components/TableSkeleton";
 export { TableEmptyState } from "./components/TableEmptyState";
