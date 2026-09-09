@@ -8,9 +8,6 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-Strict%205.0%2B-blue)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-16.8%2B%20%7C%2017%20%7C%2018%20%7C%2019-61dafb)](https://react.dev/)
 [![Dependencies](https://img.shields.io/badge/Dependencies-0%20(Zero)-success)](package.json)
-[![Virtualization](https://img.shields.io/badge/Virtualization-100k%2B%20Rows%20(60fps)-blueviolet)](#-high-performance-dom-virtualization-100000-rows)
-[![Tests](https://img.shields.io/badge/Tests-Passed-success)](https://vitest.dev/)
-[![Roadmap](https://img.shields.io/badge/Roadmap-Future%20Plans-indigo)](FUTURE_ROADMAP.md)
 
 ---
 
@@ -36,7 +33,6 @@
 - [🎨 Theming & Dark Mode](#-theming--dark-mode)
 - [🌐 Integration Guides (Next.js & Vite)](#-integration-guides-nextjs--vite)
 - [📋 Props & Types Reference](#-props--types-reference)
-- [🧭 Future Roadmap & Architectural Enhancements](FUTURE_ROADMAP.md)
 - [🇪🇬 دليل المبرمج باللغة العربية (Arabic Developer Guide)](#-دليل-المبرمج-باللغة-العربية-arabic-developer-guide)
 - [📄 License](#-license)
 
