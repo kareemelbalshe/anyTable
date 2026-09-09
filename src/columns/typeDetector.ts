@@ -68,11 +68,16 @@ export function inferColumnType(key: string, sampleValues: any[]): DataType {
       return "image";
     }
 
-    // Check if ISO Date string
-    if (isIsoDate(trimmed) || lowerKey.includes("date") || lowerKey.includes("at") || lowerKey.includes("time")) {
-      if (!isNaN(Date.parse(trimmed))) {
-        return trimmed.includes("T") || trimmed.includes(":") ? "datetime" : "date";
-      }
+    // Check if ISO Date string or date-related key
+    const isDateRelatedKey =
+      lowerKey.includes("date") ||
+      lowerKey.includes("time") ||
+      lowerKey.endsWith("_at") ||
+      lowerKey.includes("_at_") ||
+      /(?:created|updated|deleted|modified|published)at$/i.test(lowerKey);
+
+    if (isIsoDate(trimmed) || (isDateRelatedKey && trimmed.length >= 8 && !isNaN(Date.parse(trimmed)))) {
+      return trimmed.includes("T") || trimmed.includes(":") ? "datetime" : "date";
     }
 
     // Check email

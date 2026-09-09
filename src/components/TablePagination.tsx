@@ -14,7 +14,7 @@ export interface TablePaginationProps {
   pageWindow: number[];
 }
 
-export const TablePagination: React.FC<TablePaginationProps> = ({
+export function TablePagination({
   page,
   pageSize,
   totalRecords,
@@ -25,7 +25,7 @@ export const TablePagination: React.FC<TablePaginationProps> = ({
   showPageSizeSelector = true,
   showTotalCount = true,
   pageWindow,
-}) => {
+}: TablePaginationProps) {
   const theme = useAnyTableTheme();
 
   const startRecord = Math.min((page - 1) * pageSize + 1, totalRecords);

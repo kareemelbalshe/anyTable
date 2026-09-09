@@ -4,3 +4,4 @@ export * from "./useAnyTablePagination";
 export * from "./useAnyTableData";
 export * from "./useAnyTableController";
 export * from "./useAnyTableSelection";
+export * from "./useAnyTableVirtualizer";

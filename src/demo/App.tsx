@@ -18,9 +18,11 @@ import { GitHubSearchTab } from "./tabs/GitHubSearchTab";
 import { RickAndMortyTab } from "./tabs/RickAndMortyTab";
 import { ControllerTab } from "./tabs/ControllerTab";
 import { ErrorStatesTab } from "./tabs/ErrorStatesTab";
+import { VirtualizationTab } from "./tabs/VirtualizationTab";
 
 export type DemoTab =
   | "enterprise"
+  | "virtualization"
   | "saas_billing"
   | "hr_employees"
   | "devops_cloud"
@@ -41,6 +43,7 @@ interface TabItem {
 
 const DEMO_TABS: TabItem[] = [
   { id: "enterprise", label: "🏢 Enterprise Orders", badge: "Logistics" },
+  { id: "virtualization", label: "⚡ 100k Virtualization", badge: "60 FPS" },
   { id: "saas_billing", label: "💳 SaaS Billing", badge: "Fintech" },
   { id: "hr_employees", label: "👥 HR & Team", badge: "Salaries" },
   { id: "devops_cloud", label: "🖥️ Cloud DevOps", badge: "Telemetry" },
@@ -170,7 +173,16 @@ export function App() {
           />
         )}
 
-        {/* Tab 2: SaaS Subscriptions */}
+        {/* Tab 2: 100k DOM Virtualization */}
+        {activeTab === "virtualization" && (
+          <VirtualizationTab
+            selectedPreset={selectedPreset}
+            isDarkMode={isDarkMode}
+            showToast={showToast}
+          />
+        )}
+
+        {/* Tab 3: SaaS Subscriptions */}
         {activeTab === "saas_billing" && (
           <SaaSSubscriptionsTab
             selectedPreset={selectedPreset}

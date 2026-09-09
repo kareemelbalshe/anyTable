@@ -1,13 +1,16 @@
 # 🚀 AnyTable — Smart Data Table Library for React
 
-> **A developer-facing, smart data table library for React (18 & 19) & TypeScript with 3-Tier API auto-detection, dynamic column extraction, autonomous server/client search, sorting & pagination, interactive row actions with instant PATCH switches, and zero business logic coupling.**
+> **A developer-facing, smart data table library for React (16.8+, 17, 18, 19+) & TypeScript with 3-Tier API auto-detection, dynamic column extraction, autonomous server/client search, sorting & pagination, interactive row actions with instant PATCH switches, zero runtime dependencies, and zero business logic coupling.**
 
 [![npm version](https://img.shields.io/npm/v/@kareemelbalshe/any-table.svg)](https://npmjs.org/package/@kareemelbalshe/any-table)
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Online-brightgreen?logo=react)](https://kareemelbalshe.github.io/anyTable/)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Strict%205.0%2B-blue)](https://www.typescriptlang.org/)
-[![React](https://img.shields.io/badge/React-18%20%7C%2019-61dafb)](https://react.dev/)
-[![Tests](https://img.shields.io/badge/Tests-46%20Passed-success)](https://vitest.dev/)
+[![React](https://img.shields.io/badge/React-16.8%2B%20%7C%2017%20%7C%2018%20%7C%2019-61dafb)](https://react.dev/)
+[![Dependencies](https://img.shields.io/badge/Dependencies-0%20(Zero)-success)](package.json)
+[![Virtualization](https://img.shields.io/badge/Virtualization-100k%2B%20Rows%20(60fps)-blueviolet)](#-high-performance-dom-virtualization-100000-rows)
+[![Tests](https://img.shields.io/badge/Tests-Passed-success)](https://vitest.dev/)
+[![Roadmap](https://img.shields.io/badge/Roadmap-Future%20Plans-indigo)](FUTURE_ROADMAP.md)
 
 ---
 
@@ -28,10 +31,12 @@
   - [Destructive Actions with Confirmation Modal](#3-destructive-actions-with-confirmation-modal)
 - [🛠️ Column Types & Smart Renderers](#️-column-types--smart-renderers)
 - [🕹️ Imperative Controller API (`tableRef`)](#️-imperative-controller-api-tableref)
+- [⚡ High-Performance DOM Virtualization (100,000+ Rows)](#-high-performance-dom-virtualization-100000-rows)
 - [☑️ Selection & Batch Operations](#️-selection--batch-operations)
 - [🎨 Theming & Dark Mode](#-theming--dark-mode)
 - [🌐 Integration Guides (Next.js & Vite)](#-integration-guides-nextjs--vite)
 - [📋 Props & Types Reference](#-props--types-reference)
+- [🧭 Future Roadmap & Architectural Enhancements](FUTURE_ROADMAP.md)
 - [🇪🇬 دليل المبرمج باللغة العربية (Arabic Developer Guide)](#-دليل-المبرمج-باللغة-العربية-arabic-developer-guide)
 - [📄 License](#-license)
 
@@ -62,15 +67,17 @@ AnyTable is intentionally designed to **never lock you into specific backend con
 
 ### 1. Install via Package Manager
 
+> **Zero Runtime Dependencies**: AnyTable has **0** external runtime dependencies and is fully compatible with **React 16.8+, React 17, React 18, React 19**, and Next.js / Vite.
+
 ```bash
 # Using NPM
-npm install @kareemelbalshe/any-table react-icons
+npm install @kareemelbalshe/any-table
 
 # Using Yarn
-yarn add @kareemelbalshe/any-table react-icons
+yarn add @kareemelbalshe/any-table
 
 # Using PNPM
-pnpm add @kareemelbalshe/any-table react-icons
+pnpm add @kareemelbalshe/any-table
 ```
 
 ### 2. Import CSS Styles
@@ -643,9 +650,67 @@ export default function Dashboard() {
         <button onClick={() => tableRef.current?.reset()}>⚡ Reset Table</button>
       </div>
 
+      {/* Both standard ref={tableRef} and tableRef={tableRef} are supported */}
       <AnyTable<User>
-        tableRef={tableRef}
+        ref={tableRef}
         api={{ fetcher: fetchUsers }}
+      />
+    </div>
+  );
+}
+```
+
+---
+
+## ⚡ High-Performance DOM Virtualization (100,000+ Rows)
+
+Need to render 10,000, 50,000, or even **100,000+ rows** smoothly at **60 FPS**? AnyTable features a built-in, native DOM virtualization engine with **zero external runtime dependencies** (0 KB overhead) while maintaining **100% valid HTML `<table>` semantics**.
+
+### Key Highlights
+- 🚀 **Smooth 60 FPS Scrolling**: Uses passive event listeners and `requestAnimationFrame` to batch scroll updates and completely eliminate layout thrashing.
+- 📐 **Standard HTML `<table>`**: Never breaks your table into arbitrary nested `<div>` tags; uses dynamic top/bottom spacer rows inside `<tbody>`.
+- 📍 **Programmatic Navigation**: Jump to any row instantly via `tableRef.current.scrollToIndex(index, "center")`.
+- 🔍 **Integrated Search & Sort**: Automatically recalculates windowing slices during live client search and column sorting.
+- 🎛️ **Sticky Header**: Automatically sticks `<thead>` to the top of the virtual scroll container.
+
+### Usage Example
+
+```tsx
+import React, { useRef } from "react";
+import { AnyTable, TableInstance } from "@kareemelbalshe/any-table";
+
+interface Employee {
+  id: number;
+  name: string;
+  department: string;
+  salary: number;
+}
+
+export function WorkforceDirectory({ employees }: { employees: Employee[] }) {
+  const tableRef = useRef<TableInstance<Employee>>(null);
+
+  return (
+    <div>
+      <div className="flex gap-2 mb-4">
+        <button onClick={() => tableRef.current?.scrollToIndex(0, "start")}>
+          ⏮️ Top
+        </button>
+        <button onClick={() => tableRef.current?.scrollToIndex(50000, "center")}>
+          🚀 Jump to #50,000
+        </button>
+      </div>
+
+      <AnyTable<Employee>
+        ref={tableRef}
+        data={employees} // e.g. 100,000 rows
+        rowKey="id"
+        search={true}
+        sorting={true}
+        virtualized={{
+          rowHeight: 48,   // Row height in pixels (default: 48)
+          maxHeight: 520,  // Scroll container height in px (default: 520)
+          overscan: 10,    // Buffer rows outside visible area (default: 10)
+        }}
       />
     </div>
   );
@@ -1345,7 +1410,37 @@ export default function AdminPage() {
 
 ---
 
-### 💡 الحالة 8: التحديد المتعدد والعمليات الجماعية (Batch Operations)
+### 💡 الحالة 8: الجدولة الافتراضية لعرض 100,000+ صف بسلاسة 60fps دون أي تجميد للـ DOM
+```tsx
+export default function MassiveDataPage() {
+  const tableRef = useRef<TableInstance<any>>(null);
+
+  return (
+    <div>
+      <button onClick={() => tableRef.current?.scrollToIndex(50000, "center")}>
+        🚀 القفز مباشرة إلى الصف رقم 50,000
+      </button>
+
+      <AnyTable
+        ref={tableRef}
+        data={hundredThousandItems} // مصفوفة ضخمة بها 100 ألف عنصر
+        rowKey="id"
+        search={true}
+        sorting={true}
+        virtualized={{
+          rowHeight: 48,  // ارتفاع الصف بالبكسل
+          maxHeight: 520, // ارتفاع نافذة الجدول التمريرية
+          overscan: 10,   // عدد الصفوف العازلة حول الشاشة
+        }}
+      />
+    </div>
+  );
+}
+```
+
+---
+
+### 💡 الحالة 9: التحديد المتعدد والعمليات الجماعية (Batch Operations)
 ```tsx
 export default function SelectionPage() {
   const [selectedUsers, setSelectedUsers] = useState([]);

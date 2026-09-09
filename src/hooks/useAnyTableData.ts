@@ -14,6 +14,7 @@ export interface UseAnyTableDataParams<TData = any> {
   sortOrder: SortDirection;
   page: number;
   pageSize: number;
+  paginationEnabled?: boolean;
   manualLoading?: boolean;
 }
 
@@ -26,6 +27,7 @@ export function useAnyTableData<TData = any>({
   sortOrder,
   page,
   pageSize,
+  paginationEnabled = true,
   manualLoading,
 }: UseAnyTableDataParams<TData>) {
   const isRemoteApi = Boolean(api && typeof api.fetcher === "function");
@@ -146,12 +148,17 @@ export function useAnyTableData<TData = any>({
     const customComparator = activeCol?.comparator;
     const sorted = sortRows(filtered, sortBy, sortOrder, customComparator);
 
-    // Step C: Pagination Slicing
-    const startIndex = (page - 1) * pageSize;
-    const paginated = sorted.slice(startIndex, startIndex + pageSize);
+    // Step C: Pagination Slicing (bypass when pagination is disabled, e.g. virtualization)
+    let displayRows: TData[];
+    if (paginationEnabled) {
+      const startIndex = (page - 1) * pageSize;
+      displayRows = sorted.slice(startIndex, startIndex + pageSize);
+    } else {
+      displayRows = sorted;
+    }
 
     return {
-      displayRows: paginated,
+      displayRows,
       finalTotal: filtered.length,
     };
   }, [
@@ -166,6 +173,7 @@ export function useAnyTableData<TData = any>({
     sortOrder,
     page,
     pageSize,
+    paginationEnabled,
   ]);
 
   return {

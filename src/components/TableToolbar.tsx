@@ -16,7 +16,7 @@ export interface TableToolbarProps {
   addHandler?: () => void;
 }
 
-export const TableToolbar: React.FC<TableToolbarProps> = ({
+export function TableToolbar({
   displayTitle,
   subtitle,
   isSearchEnabled,
@@ -29,7 +29,7 @@ export const TableToolbar: React.FC<TableToolbarProps> = ({
   add,
   linkAdd,
   addHandler,
-}) => {
+}: TableToolbarProps) {
   const showToolbar = Boolean(
     displayTitle || subtitle || isSearchEnabled || headerActions || add
   );

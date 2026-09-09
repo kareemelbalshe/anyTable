@@ -41,6 +41,28 @@ export interface PaginationConfig {
   showTotalCount?: boolean;
 }
 
+export interface VirtualizedConfig {
+  /**
+   * Whether virtualization is enabled. Defaults to true when virtualized prop is provided.
+   */
+  enabled?: boolean;
+
+  /**
+   * Fixed or estimated height in pixels for each table row. Defaults to 48.
+   */
+  rowHeight?: number;
+
+  /**
+   * Max height of the scroll container in pixels (e.g. 520 or "600px"). Defaults to 520.
+   */
+  maxHeight?: number | string;
+
+  /**
+   * Number of rows to render outside visible viewport above and below. Defaults to 10.
+   */
+  overscan?: number;
+}
+
 export interface TableState<TData = any> {
   data: TData[];
   loading: boolean;
@@ -117,6 +139,11 @@ export interface TableInstance<TData = any> {
    * Returns current internal state snapshot.
    */
   getState: () => TableState<TData>;
+
+  /**
+   * Scrolls table smoothly or directly to a specific row index (when virtualization is active).
+   */
+  scrollToIndex?: (index: number, align?: "start" | "center" | "end" | "auto") => void;
 }
 
 export interface AnyTableProps<TData = any> {
@@ -184,6 +211,11 @@ export interface AnyTableProps<TData = any> {
    * Pagination feature configuration or boolean to enable default pagination.
    */
   pagination?: boolean | PaginationConfig;
+
+  /**
+   * Virtualization configuration for handling massive datasets (1,000 to 100,000+ rows) with 60fps DOM windowing.
+   */
+  virtualized?: boolean | VirtualizedConfig;
 
   /**
    * Enables row selection checkboxes.

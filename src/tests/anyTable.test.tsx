@@ -323,6 +323,76 @@ describe("<AnyTable /> Component", () => {
     const wrapper = container.querySelector(".any-table-wrapper");
     expect(wrapper).toHaveStyle({ "--any-table-radius": "4px" });
   });
+
+  it("Exposes imperative TableInstance methods via standard ref prop (React 16.8 - 19 compatibility)", () => {
+    let tableRefInstance: any = null;
+
+    function RefTestWrapper() {
+      const ref = React.useRef<any>(null);
+      React.useEffect(() => {
+        tableRefInstance = ref.current;
+      }, []);
+
+      return <AnyTable ref={ref} data={users} columns={[{ key: "name", title: "Name" }]} />;
+    }
+
+    render(<RefTestWrapper />);
+
+    expect(tableRefInstance).toBeDefined();
+    expect(typeof tableRefInstance.refresh).toBe("function");
+    expect(typeof tableRefInstance.setPage).toBe("function");
+    expect(typeof tableRefInstance.setSearch).toBe("function");
+    expect(typeof tableRefInstance.getSelectedRows).toBe("function");
+    expect(typeof tableRefInstance.reset).toBe("function");
+  });
+
+  it("Persists selected rows across pagination navigation", async () => {
+    const manyUsers = [
+      { id: "1", name: "User 1" },
+      { id: "2", name: "User 2" },
+      { id: "3", name: "User 3" },
+      { id: "4", name: "User 4" },
+    ];
+
+    let selectedSnapshot: any[] = [];
+
+    render(
+      <AnyTable
+        data={manyUsers}
+        columns={[{ key: "name", title: "Name" }]}
+        selectable
+        pagination={{ defaultPageSize: 2 }}
+        onSelectionChange={(rows) => {
+          selectedSnapshot = rows;
+        }}
+      />
+    );
+
+    const checkboxes = screen.getAllByRole("checkbox");
+    // Row 1 checkbox on page 1 (index 0 is select-all, index 1 is first row)
+    await act(async () => {
+      fireEvent.click(checkboxes[1]);
+    });
+
+    expect(selectedSnapshot.length).toBe(1);
+    expect(selectedSnapshot[0].id).toBe("1");
+
+    // Click Next Page button
+    const nextBtn = screen.getByRole("button", { name: /next page/i });
+    await act(async () => {
+      fireEvent.click(nextBtn);
+    });
+
+    // Checkboxes on page 2: select first row (User 3)
+    const page2Checkboxes = screen.getAllByRole("checkbox");
+    await act(async () => {
+      fireEvent.click(page2Checkboxes[1]);
+    });
+
+    // Both User 1 from page 1 and User 3 from page 2 should be in selectedSnapshot
+    expect(selectedSnapshot.length).toBe(2);
+    expect(selectedSnapshot.map((u) => u.id)).toEqual(["1", "3"]);
+  });
 });
 
 

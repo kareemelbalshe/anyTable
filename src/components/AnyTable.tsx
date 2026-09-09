@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useCallback } from "react";
-import { AnyTableProps, TableState } from "../types/table.types";
+import React, { useState, useMemo, useCallback, useRef } from "react";
+import { AnyTableProps, TableState, TableInstance } from "../types/table.types";
 import { resolveColumns } from "../columns/columnResolver";
 import { resolveTableActions } from "../adapters/legacyActionsAdapter";
 import { useAnyTableSearch } from "../hooks/useAnyTableSearch";
@@ -8,6 +8,7 @@ import { useAnyTablePagination } from "../hooks/useAnyTablePagination";
 import { useAnyTableData } from "../hooks/useAnyTableData";
 import { useAnyTableController } from "../hooks/useAnyTableController";
 import { useAnyTableSelection } from "../hooks/useAnyTableSelection";
+import { useAnyTableVirtualizer } from "../hooks/useAnyTableVirtualizer";
 import { AnyTableThemeProvider, useAnyTableTheme } from "../theme/themeContext";
 import { TableToolbar } from "./TableToolbar";
 import { TableHeader } from "./TableHeader";
@@ -32,7 +33,8 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
     actionsWidth,
     search = true,
     sorting = true,
-    pagination = true,
+    pagination,
+    virtualized = false,
     selectable = false,
     onSelectionChange,
     onRowClick,
@@ -173,6 +175,31 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
   const [activePage, setActivePage] = useState(1);
   const [activePageSize, setActivePageSize] = useState(10);
 
+  const isVirtualRequested = useMemo(() => {
+    if (typeof virtualized === "object" && virtualized !== null) {
+      return virtualized.enabled !== false;
+    }
+    return Boolean(virtualized);
+  }, [virtualized]);
+
+  const resolvedPaginationConfig = useMemo(() => {
+    if (pagination !== undefined) {
+      return pagination;
+    }
+    // When virtualized is requested and pagination is not explicitly provided, disable pagination
+    if (isVirtualRequested) {
+      return false;
+    }
+    return true;
+  }, [isVirtualRequested, pagination]);
+
+  const paginationEnabled = useMemo(() => {
+    if (typeof resolvedPaginationConfig === "object" && resolvedPaginationConfig !== null) {
+      return resolvedPaginationConfig.enabled !== false;
+    }
+    return Boolean(resolvedPaginationConfig);
+  }, [resolvedPaginationConfig]);
+
   // 6. Data Orchestration Hook
   const {
     rows,
@@ -190,6 +217,7 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
     sortOrder,
     page: activePage,
     pageSize: activePageSize,
+    paginationEnabled,
     manualLoading,
   });
 
@@ -205,7 +233,7 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
     getPageWindow,
     paginationConfig,
   } = useAnyTablePagination({
-    config: pagination,
+    config: resolvedPaginationConfig,
     totalRecords,
     onPageChange: (newPage, newPageSize) => {
       setActivePage(newPage);
@@ -213,7 +241,29 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
     },
   });
 
-  // 7. Selection Hook
+  // 7. Virtualization Hook
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+
+  const {
+    isVirtualized,
+    paddingTop,
+    paddingBottom,
+    startIndex,
+    maxHeight: virtualMaxHeight,
+    scrollToIndex,
+    sliceRows: virtualSliceRows,
+  } = useAnyTableVirtualizer({
+    config: virtualized,
+    totalCount: rows.length,
+    scrollContainerRef,
+  });
+
+  const displayRows = useMemo(() => {
+    if (!isVirtualized) return rows;
+    return virtualSliceRows(rows);
+  }, [isVirtualized, rows, virtualSliceRows]);
+
+  // 8. Selection Hook
   const {
     selectedKeys,
     selectedRows,
@@ -239,7 +289,7 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
     [refresh, loading, page, selectedRows, setPage]
   );
 
-  // 8. Controller Ref Exposure
+  // 9. Controller Ref Exposure
   useAnyTableController({
     tableRef,
     refresh,
@@ -252,6 +302,7 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
     setSorting,
     selectedRows,
     clearSelection,
+    scrollToIndex,
     getState: (): TableState<TData> => ({
       data: rows,
       loading,
@@ -285,6 +336,17 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
     return s;
   }, [theme]);
 
+  const tableContainerStyle = useMemo<React.CSSProperties>(() => {
+    const s: React.CSSProperties = {};
+    if (theme.borderRadius) s.borderRadius = theme.borderRadius;
+    if (isVirtualized) {
+      s.maxHeight = typeof virtualMaxHeight === "number" ? `${virtualMaxHeight}px` : virtualMaxHeight;
+      s.overflowY = "auto";
+      s.position = "relative";
+    }
+    return s;
+  }, [theme.borderRadius, isVirtualized, virtualMaxHeight]);
+
   return (
     <div
       style={themeStyle}
@@ -308,7 +370,8 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
 
       {/* Table Container Box */}
       <div
-        style={theme.borderRadius ? { borderRadius: theme.borderRadius } : undefined}
+        ref={scrollContainerRef}
+        style={tableContainerStyle}
         className={`${
           theme.classes?.tableWrapper ||
           "w-full overflow-x-auto rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-slate-900 shadow-sm transition-colors"
@@ -328,7 +391,7 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
             className={`${theme.classes?.table || "w-full border-collapse text-left text-sm"} ${
               compact || theme.density === "compact" ? "text-xs" : ""
             } ${
-              stickyHeader ? "relative" : ""
+              stickyHeader || isVirtualized ? "relative" : ""
             } ${tableClassName}`}
           >
             {showHeader && (
@@ -345,6 +408,7 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
                 isIndeterminate={isIndeterminate}
                 onToggleSelectAll={handleToggleSelectAll}
                 headerClassName={headerClassName}
+                sticky={stickyHeader || isVirtualized}
               />
             )}
 
@@ -372,7 +436,7 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
             ) : (
               // Table Body
               <TableBody
-                rows={rows}
+                rows={displayRows}
                 columns={resolvedColumns}
                 actions={resolvedActions}
                 actionContext={actionContext}
@@ -384,6 +448,10 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
                 striped={striped}
                 hoverable={hoverable}
                 rowClassName={rowClassName}
+                isVirtualized={isVirtualized}
+                paddingTop={paddingTop}
+                paddingBottom={paddingBottom}
+                startIndex={startIndex}
               />
             )}
           </table>
@@ -411,16 +479,23 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
 
 /**
  * AnyTable — The developer-facing, smart data table library for React.
+ * Supports both standard ref={tableRef} and tableRef={tableRef} seamlessly across React 16.8, 17, 18, and 19.
  */
-export function AnyTable<TData = any>(props: AnyTableProps<TData>) {
+export const AnyTable = React.forwardRef(function AnyTable<TData = any>(
+  props: AnyTableProps<TData>,
+  ref: React.Ref<TableInstance<TData>>
+) {
+  const mergedRef = ref || props.tableRef;
   if (!props.theme && !props.preset) {
-    return <AnyTableInner {...props} />;
+    return <AnyTableInner {...props} tableRef={mergedRef} />;
   }
   return (
     <AnyTableThemeProvider theme={props.theme} preset={props.preset}>
-      <AnyTableInner {...props} />
+      <AnyTableInner {...props} tableRef={mergedRef} />
     </AnyTableThemeProvider>
   );
-}
+}) as <TData = any>(
+  props: AnyTableProps<TData> & { ref?: React.Ref<TableInstance<TData>> }
+) => React.ReactElement | null;
 
 export default AnyTable;

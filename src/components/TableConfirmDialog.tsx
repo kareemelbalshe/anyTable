@@ -12,7 +12,7 @@ export interface ConfirmModalProps {
   isLoading?: boolean;
 }
 
-export const ConfirmModal: React.FC<ConfirmModalProps> = ({
+export function ConfirmModal({
   isOpen,
   title,
   message,
@@ -22,7 +22,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   onClose,
   onConfirm,
   isLoading = false,
-}) => {
+}: ConfirmModalProps) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();

@@ -25,7 +25,11 @@ export interface CellRendererProps<TData = any> {
   rowIndex: number;
 }
 
-export const CellRenderer: React.FC<CellRendererProps> = ({ row, column, rowIndex }) => {
+export function CellRenderer<TData = any>({
+  row,
+  column,
+  rowIndex,
+}: CellRendererProps<TData>) {
   const value = getNestedValue(row, column.key);
 
   // 1. Custom Render (Full developer control)

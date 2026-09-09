@@ -54,4 +54,20 @@ describe("Client-Side Search & Sorting Engine", () => {
     sortRows(dataset, "spend", "desc");
     expect(dataset).toEqual(originalCopy);
   });
+
+  it("Consistently places null and undefined values at the end in both asc and desc orders", () => {
+    const dataWithNulls = [
+      { id: 1, val: 50 },
+      { id: 2, val: null },
+      { id: 3, val: 10 },
+      { id: 4, val: undefined },
+      { id: 5, val: 100 },
+    ];
+
+    const asc = sortRows(dataWithNulls, "val", "asc");
+    expect(asc.map((d) => d.id)).toEqual([3, 1, 5, 2, 4]);
+
+    const desc = sortRows(dataWithNulls, "val", "desc");
+    expect(desc.map((d) => d.id)).toEqual([5, 1, 3, 2, 4]);
+  });
 });

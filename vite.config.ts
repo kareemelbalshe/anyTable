@@ -11,9 +11,12 @@ export default defineConfig(({ mode }) => {
 
   return {
     base: isDemo ? "/anyTable/" : "/",
+    publicDir: isDemo ? "public" : false,
     plugins: [
       tailwindcss(),
-      react(),
+      react({
+        jsxRuntime: isLibrary ? "classic" : "automatic",
+      }),
       ...(isLibrary
         ? [
             dts({

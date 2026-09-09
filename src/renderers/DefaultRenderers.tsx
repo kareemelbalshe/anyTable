@@ -1,11 +1,20 @@
 import React from "react";
 import { ColumnDef } from "../types/column.types";
 
+export interface BaseRendererProps {
+  value: any;
+  column: ColumnDef;
+}
+
+export interface DateRendererProps extends BaseRendererProps {
+  isDateTime?: boolean;
+}
+
 export const FallbackPlaceholder = () => (
   <span className="text-gray-400 dark:text-gray-500 font-mono text-sm">—</span>
 );
 
-export const StringRenderer: React.FC<{ value: any; column: ColumnDef }> = ({ value }) => {
+export function StringRenderer({ value }: BaseRendererProps) {
   if (value === null || value === undefined || value === "") {
     return <FallbackPlaceholder />;
   }
@@ -15,9 +24,9 @@ export const StringRenderer: React.FC<{ value: any; column: ColumnDef }> = ({ va
       {str}
     </span>
   );
-};
+}
 
-export const NumberRenderer: React.FC<{ value: any; column: ColumnDef }> = ({ value }) => {
+export function NumberRenderer({ value }: BaseRendererProps) {
   if (value === null || value === undefined || isNaN(Number(value))) {
     return <FallbackPlaceholder />;
   }
@@ -27,9 +36,9 @@ export const NumberRenderer: React.FC<{ value: any; column: ColumnDef }> = ({ va
       {num.toLocaleString()}
     </span>
   );
-};
+}
 
-export const BooleanRenderer: React.FC<{ value: any; column: ColumnDef }> = ({ value }) => {
+export function BooleanRenderer({ value }: BaseRendererProps) {
   if (value === null || value === undefined) {
     return <FallbackPlaceholder />;
   }
@@ -46,12 +55,9 @@ export const BooleanRenderer: React.FC<{ value: any; column: ColumnDef }> = ({ v
       {isTrue ? "Yes" : "No"}
     </span>
   );
-};
+}
 
-export const DateRenderer: React.FC<{ value: any; column: ColumnDef; isDateTime?: boolean }> = ({
-  value,
-  isDateTime = false,
-}) => {
+export function DateRenderer({ value, isDateTime = false }: DateRendererProps) {
   if (!value) return <FallbackPlaceholder />;
 
   const date = value instanceof Date ? value : new Date(value);
@@ -69,9 +75,9 @@ export const DateRenderer: React.FC<{ value: any; column: ColumnDef; isDateTime?
       )}
     </span>
   );
-};
+}
 
-export const CurrencyRenderer: React.FC<{ value: any; column: ColumnDef }> = ({ value, column }) => {
+export function CurrencyRenderer({ value, column }: BaseRendererProps) {
   if (value === null || value === undefined || isNaN(Number(value))) {
     return <FallbackPlaceholder />;
   }
@@ -84,11 +90,11 @@ export const CurrencyRenderer: React.FC<{ value: any; column: ColumnDef }> = ({ 
       <span className="text-xs font-normal text-gray-500 dark:text-gray-400">{currency}</span>
     </span>
   );
-};
+}
 
 const DEFAULT_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
 
-export const ImageRenderer: React.FC<{ value: any; column: ColumnDef }> = ({ value }) => {
+export function ImageRenderer({ value }: BaseRendererProps) {
   let src = "";
   if (typeof value === "string") {
     src = value;
@@ -115,7 +121,7 @@ export const ImageRenderer: React.FC<{ value: any; column: ColumnDef }> = ({ val
       />
     </div>
   );
-};
+}
 
 const STATUS_COLOR_MAP: Record<string, { bg: string; text: string; dot: string }> = {
   active: { bg: "bg-emerald-500/10 border-emerald-500/20", text: "text-emerald-600 dark:text-emerald-400", dot: "bg-emerald-500" },
@@ -135,7 +141,7 @@ const STATUS_COLOR_MAP: Record<string, { bg: string; text: string; dot: string }
   closed: { bg: "bg-gray-500/10 border-gray-500/20", text: "text-gray-600 dark:text-gray-400", dot: "bg-gray-500" },
 };
 
-export const StatusRenderer: React.FC<{ value: any; column: ColumnDef }> = ({ value, column }) => {
+export function StatusRenderer({ value, column }: BaseRendererProps) {
   if (value === null || value === undefined || value === "") {
     return <FallbackPlaceholder />;
   }
@@ -171,9 +177,9 @@ export const StatusRenderer: React.FC<{ value: any; column: ColumnDef }> = ({ va
       {str}
     </span>
   );
-};
+}
 
-export const ArrayRenderer: React.FC<{ value: any; column: ColumnDef }> = ({ value }) => {
+export function ArrayRenderer({ value }: BaseRendererProps) {
   if (!Array.isArray(value) || value.length === 0) {
     return <FallbackPlaceholder />;
   }
@@ -193,9 +199,9 @@ export const ArrayRenderer: React.FC<{ value: any; column: ColumnDef }> = ({ val
       )}
     </div>
   );
-};
+}
 
-export const ObjectRenderer: React.FC<{ value: any; column: ColumnDef }> = ({ value }) => {
+export function ObjectRenderer({ value }: BaseRendererProps) {
   if (!value || typeof value !== "object") {
     return <FallbackPlaceholder />;
   }
@@ -210,9 +216,9 @@ export const ObjectRenderer: React.FC<{ value: any; column: ColumnDef }> = ({ va
       {JSON.stringify(value)}
     </span>
   );
-};
+}
 
-export const UrlRenderer: React.FC<{ value: any; column: ColumnDef }> = ({ value }) => {
+export function UrlRenderer({ value }: BaseRendererProps) {
   if (!value) return <FallbackPlaceholder />;
   const str = String(value);
   return (
@@ -226,9 +232,9 @@ export const UrlRenderer: React.FC<{ value: any; column: ColumnDef }> = ({ value
       <span className="text-xs">↗</span>
     </a>
   );
-};
+}
 
-export const EmailRenderer: React.FC<{ value: any; column: ColumnDef }> = ({ value }) => {
+export function EmailRenderer({ value }: BaseRendererProps) {
   if (!value) return <FallbackPlaceholder />;
   const str = String(value);
   return (
@@ -239,9 +245,9 @@ export const EmailRenderer: React.FC<{ value: any; column: ColumnDef }> = ({ val
       {str}
     </a>
   );
-};
+}
 
-export const PhoneRenderer: React.FC<{ value: any; column: ColumnDef }> = ({ value }) => {
+export function PhoneRenderer({ value }: BaseRendererProps) {
   if (!value) return <FallbackPlaceholder />;
   const str = String(value);
   return (
@@ -252,9 +258,9 @@ export const PhoneRenderer: React.FC<{ value: any; column: ColumnDef }> = ({ val
       {str}
     </a>
   );
-};
+}
 
-export const ProgressRenderer: React.FC<{ value: any; column: ColumnDef }> = ({ value }) => {
+export function ProgressRenderer({ value }: BaseRendererProps) {
   if (value === null || value === undefined || isNaN(Number(value))) {
     return <FallbackPlaceholder />;
   }
@@ -281,9 +287,9 @@ export const ProgressRenderer: React.FC<{ value: any; column: ColumnDef }> = ({ 
       </span>
     </div>
   );
-};
+}
 
-export const RatingRenderer: React.FC<{ value: any; column: ColumnDef }> = ({ value }) => {
+export function RatingRenderer({ value }: BaseRendererProps) {
   if (value === null || value === undefined || isNaN(Number(value))) {
     return <FallbackPlaceholder />;
   }
@@ -295,9 +301,9 @@ export const RatingRenderer: React.FC<{ value: any; column: ColumnDef }> = ({ va
       <span className="text-gray-400 dark:text-gray-500 text-[10px]">/ 5</span>
     </div>
   );
-};
+}
 
-export const BadgeRenderer: React.FC<{ value: any; column: ColumnDef }> = ({ value }) => {
+export function BadgeRenderer({ value }: BaseRendererProps) {
   if (value === null || value === undefined || value === "") {
     return <FallbackPlaceholder />;
   }
@@ -307,5 +313,4 @@ export const BadgeRenderer: React.FC<{ value: any; column: ColumnDef }> = ({ val
       {str}
     </span>
   );
-};
-
+}

@@ -6,11 +6,11 @@ export interface TableSkeletonProps {
   hasActions?: boolean;
 }
 
-export const TableSkeleton: React.FC<TableSkeletonProps> = ({
+export function TableSkeleton({
   columnsCount = 5,
   rowsCount = 5,
   hasActions = true,
-}) => {
+}: TableSkeletonProps) {
   return (
     <tbody className="divide-y divide-gray-100 dark:divide-gray-800/60 bg-white dark:bg-slate-900">
       {Array.from({ length: rowsCount }).map((_, rowIndex) => (

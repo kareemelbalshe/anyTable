@@ -8,13 +8,13 @@ export interface TableEmptyStateProps {
   colSpan?: number;
 }
 
-export const TableEmptyState: React.FC<TableEmptyStateProps> = ({
+export function TableEmptyState({
   title,
   description,
   isSearchActive = false,
   onClearSearch,
   colSpan,
-}) => {
+}: TableEmptyStateProps) {
   const defaultTitle = isSearchActive ? "No matching records found" : "No data available";
   const defaultDescription = isSearchActive
     ? "Try adjusting your search criteria or clear the search filter."

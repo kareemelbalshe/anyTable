@@ -103,7 +103,11 @@ const VARIANT_CLASSES: Record<ActionVariant, string> = {
   ghost: "bg-transparent text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white",
 };
 
-export const ActionRenderer: React.FC<ActionRendererProps> = ({ row, actions, context }) => {
+export function ActionRenderer<TData = any>({
+  row,
+  actions,
+  context,
+}: ActionRendererProps<TData>) {
   const [activeConfirm, setActiveConfirm] = useState<{
     isOpen: boolean;
     title: string;

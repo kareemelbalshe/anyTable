@@ -40,13 +40,17 @@ describe("Auto Column Generator & Type Detection", () => {
     expect(toTitleCase("orderId")).toBe("Order Id");
   });
 
-  it("Infers semantic data types accurately", () => {
+  it("Infers semantic data types accurately without false positives on words containing 'at'", () => {
     expect(inferColumnType("avatar", ["https://site.com/photo.jpg"])).toBe("image");
     expect(inferColumnType("price", [199.99])).toBe("currency");
     expect(inferColumnType("createdAt", ["2026-08-29T10:00:00Z"])).toBe("datetime");
+    expect(inferColumnType("created_at", ["2026-08-29T10:00:00Z"])).toBe("datetime");
     expect(inferColumnType("email", ["dev@kareem.com"])).toBe("email");
     expect(inferColumnType("status", ["active"])).toBe("status");
     expect(inferColumnType("isActive", [true])).toBe("boolean");
+    // Ensure words containing 'at' like 'category', 'status', 'format' are not falsely marked as date
+    expect(inferColumnType("category", ["Electronics"])).toBe("string");
+    expect(inferColumnType("format", ["JSON"])).toBe("string");
   });
 
   it("Filters out ignored keys like password and __v", () => {

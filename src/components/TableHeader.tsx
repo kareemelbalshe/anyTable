@@ -15,9 +15,10 @@ export interface TableHeaderProps<TData = any> {
   isIndeterminate?: boolean;
   onToggleSelectAll?: () => void;
   headerClassName?: string;
+  sticky?: boolean;
 }
 
-export const TableHeader: React.FC<TableHeaderProps> = ({
+export function TableHeader<TData = any>({
   columns,
   hasActions,
   actionsTitle = "Actions",
@@ -30,10 +31,16 @@ export const TableHeader: React.FC<TableHeaderProps> = ({
   isIndeterminate,
   onToggleSelectAll,
   headerClassName = "",
-}) => {
+  sticky = false,
+}: TableHeaderProps<TData>) {
   const theme = useAnyTableTheme();
 
   const theadStyle: React.CSSProperties = {};
+  if (sticky) {
+    theadStyle.position = "sticky";
+    theadStyle.top = 0;
+    theadStyle.zIndex = 10;
+  }
   if (theme.colors?.theadBg) theadStyle.backgroundColor = theme.colors.theadBg;
   if (theme.colors?.theadText) theadStyle.color = theme.colors.theadText;
 

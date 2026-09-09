@@ -5,7 +5,7 @@ export interface TableErrorStateProps {
   onRetry?: () => void;
 }
 
-export const TableErrorState: React.FC<TableErrorStateProps> = ({ error, onRetry }) => {
+export function TableErrorState({ error, onRetry }: TableErrorStateProps) {
   const errorMessage =
     typeof error === "string"
       ? error

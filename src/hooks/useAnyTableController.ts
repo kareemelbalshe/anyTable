@@ -15,6 +15,7 @@ export interface UseAnyTableControllerParams<TData = any> {
   selectedRows: TData[];
   clearSelection: () => void;
   getState: () => TableState<TData>;
+  scrollToIndex?: (index: number, align?: "start" | "center" | "end" | "auto") => void;
 }
 
 export function useAnyTableController<TData = any>({
@@ -30,6 +31,7 @@ export function useAnyTableController<TData = any>({
   selectedRows,
   clearSelection,
   getState,
+  scrollToIndex,
 }: UseAnyTableControllerParams<TData>) {
   useImperativeHandle(
     tableRef,
@@ -51,6 +53,7 @@ export function useAnyTableController<TData = any>({
       getSelectedRows: () => selectedRows,
       clearSelection,
       getState,
+      scrollToIndex,
     }),
     [
       refresh,
@@ -64,6 +67,7 @@ export function useAnyTableController<TData = any>({
       selectedRows,
       clearSelection,
       getState,
+      scrollToIndex,
     ]
   );
 }

@@ -1,6 +1,6 @@
 import { ColumnDef } from "../types/column.types";
 import { generateAutoColumns } from "./autoColumns";
-import { toTitleCase } from "../adapters/objectUtils";
+import { toTitleCase, getNestedValue } from "../adapters/objectUtils";
 import { inferColumnType } from "./typeDetector";
 
 export interface ResolveColumnsParams<TData = any> {
@@ -24,7 +24,7 @@ export function resolveColumns<TData = any>(
   if (headerData && Array.isArray(headerData) && headerData.length > 0) {
     return headerData.map((key, idx) => {
       const title = thead && thead[idx] ? thead[idx] : toTitleCase(key);
-      const sampleValues = data.map((d) => (d as any)?.[key]);
+      const sampleValues = data.map((d) => getNestedValue(d, key));
       const inferredType = inferColumnType(key, sampleValues);
 
       return {
@@ -42,7 +42,7 @@ export function resolveColumns<TData = any>(
   if (columns && Array.isArray(columns) && columns.length > 0) {
     return columns.map((col) => {
       if (typeof col === "string") {
-        const sampleValues = data.map((d) => (d as any)?.[col]);
+        const sampleValues = data.map((d) => getNestedValue(d, col));
         const inferredType = inferColumnType(col, sampleValues);
         return {
           key: col,
@@ -57,7 +57,7 @@ export function resolveColumns<TData = any>(
       // If object, fill defaults
       const keyStr = String(col.key);
       const title = col.title !== undefined ? col.title : toTitleCase(keyStr);
-      const inferredType = col.type || inferColumnType(keyStr, data.map((d) => (d as any)?.[keyStr]));
+      const inferredType = col.type || inferColumnType(keyStr, data.map((d) => getNestedValue(d, keyStr)));
 
       return {
         ...col,

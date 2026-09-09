@@ -18,9 +18,13 @@ export interface TableBodyProps<TData = any> {
   striped?: boolean;
   hoverable?: boolean;
   rowClassName?: string | ((row: TData, index: number) => string);
+  isVirtualized?: boolean;
+  paddingTop?: number;
+  paddingBottom?: number;
+  startIndex?: number;
 }
 
-export const TableBody: React.FC<TableBodyProps> = ({
+export function TableBody<TData = any>({
   rows,
   columns,
   actions,
@@ -33,24 +37,44 @@ export const TableBody: React.FC<TableBodyProps> = ({
   striped = false,
   hoverable = true,
   rowClassName,
-}) => {
+  isVirtualized = false,
+  paddingTop = 0,
+  paddingBottom = 0,
+  startIndex = 0,
+}: TableBodyProps<TData>) {
   const theme = useAnyTableTheme();
   const hasActions = Boolean(actions && actions.length > 0);
+  const totalCols = columns.length + (selectable ? 1 : 0) + (hasActions ? 1 : 0);
 
   return (
     <tbody className={theme.classes?.tbody || "divide-y divide-gray-100 dark:divide-gray-800/60 bg-white dark:bg-slate-900"}>
-      {rows.map((row, rowIndex) => {
-        const rowKey = rowKeyResolver(row, rowIndex);
+      {/* Top spacer row for DOM Virtualization */}
+      {isVirtualized && paddingTop > 0 && (
+        <tr
+          style={{ height: `${paddingTop}px`, border: 0 }}
+          aria-hidden="true"
+          className="pointer-events-none"
+        >
+          <td
+            colSpan={totalCols}
+            style={{ height: `${paddingTop}px`, padding: 0, border: 0 }}
+          />
+        </tr>
+      )}
+
+      {rows.map((row, localIndex) => {
+        const globalIndex = startIndex + localIndex;
+        const rowKey = rowKeyResolver(row, globalIndex);
         const isSelected = selectedKeys?.has(rowKey);
         const customRowClass =
-          typeof rowClassName === "function" ? rowClassName(row, rowIndex) : rowClassName || "";
+          typeof rowClassName === "function" ? rowClassName(row, globalIndex) : rowClassName || "";
 
         return (
           <tr
             key={String(rowKey)}
-            onClick={(e) => onRowClick?.(row, rowIndex, e)}
+            onClick={(e) => onRowClick?.(row, globalIndex, e)}
             className={`${theme.classes?.tr || "transition-colors duration-150"} ${
-              striped && rowIndex % 2 === 1 ? "bg-gray-50/40 dark:bg-slate-800/20" : ""
+              striped && globalIndex % 2 === 1 ? "bg-gray-50/40 dark:bg-slate-800/20" : ""
             } ${hoverable ? "hover:bg-gray-50/70 dark:hover:bg-slate-800/50" : ""} ${
               isSelected ? "bg-primary/5 dark:bg-primary/10" : ""
             } ${onRowClick ? "cursor-pointer" : ""} ${customRowClass}`}
@@ -81,7 +105,7 @@ export const TableBody: React.FC<TableBodyProps> = ({
 
               const customCellClass =
                 typeof col.className === "function"
-                  ? col.className((row as any)?.[col.key], row, rowIndex)
+                  ? col.className((row as any)?.[col.key], row, globalIndex)
                   : col.className || "";
 
               return (
@@ -94,7 +118,7 @@ export const TableBody: React.FC<TableBodyProps> = ({
                   }}
                   className={`${theme.classes?.td || "py-3 px-4 text-sm align-middle"} ${alignClass} ${customCellClass}`}
                 >
-                  <CellRenderer row={row} column={col} rowIndex={rowIndex} />
+                  <CellRenderer row={row} column={col} rowIndex={globalIndex} />
                 </td>
               );
             })}
@@ -115,6 +139,20 @@ export const TableBody: React.FC<TableBodyProps> = ({
           </tr>
         );
       })}
+
+      {/* Bottom spacer row for DOM Virtualization */}
+      {isVirtualized && paddingBottom > 0 && (
+        <tr
+          style={{ height: `${paddingBottom}px`, border: 0 }}
+          aria-hidden="true"
+          className="pointer-events-none"
+        >
+          <td
+            colSpan={totalCols}
+            style={{ height: `${paddingBottom}px`, padding: 0, border: 0 }}
+          />
+        </tr>
+      )}
     </tbody>
   );
-};
+}

@@ -20,6 +20,13 @@ export function sortRows<TData = any>(
 
   if (customComparator && typeof customComparator === "function") {
     copy.sort((a, b) => {
+      const valA = getNestedValue(a, sortBy);
+      const valB = getNestedValue(b, sortBy);
+      if (valA === undefined || valA === null) {
+        if (valB === undefined || valB === null) return 0;
+        return 1;
+      }
+      if (valB === undefined || valB === null) return -1;
       const res = customComparator(a, b);
       return sortOrder === "desc" ? -res : res;
     });

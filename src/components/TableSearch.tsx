@@ -9,13 +9,13 @@ export interface TableSearchProps {
   placeholder?: string;
 }
 
-export const TableSearch: React.FC<TableSearchProps> = ({
+export function TableSearch({
   value,
   onChange,
   onClear,
   isDebouncing = false,
   placeholder = "Search records...",
-}) => {
+}: TableSearchProps) {
   const theme = useAnyTableTheme();
 
   return (
