@@ -110,12 +110,9 @@ export function TableBody<TData = any>({
                 style={{
                   width: 44,
                   minWidth: 44,
-                  position: "sticky",
-                  [isRtl ? "right" : "left"]: 0,
-                  zIndex: 3,
                   backgroundColor: isSelected
                     ? undefined
-                    : theme.colors?.tableBg || "inherit",
+                    : theme.colors?.tableBg || undefined,
                 }}
                 className="w-11 px-4 py-3 text-center align-middle"
                 onClick={(e) => e.stopPropagation()}
@@ -189,16 +186,14 @@ export function TableBody<TData = any>({
               <td
                 style={{
                   width: actionsWidth || "auto",
-                  position: "sticky",
-                  [isRtl ? "left" : "right"]: 0,
-                  zIndex: 3,
+                  minWidth: typeof actionsWidth === "number" ? actionsWidth : undefined,
                   backgroundColor: isSelected
                     ? undefined
-                    : theme.colors?.tableBg || "inherit",
+                    : theme.colors?.tableBg || undefined,
                 }}
                 className={`${
                   theme.classes?.td || "py-3 px-4 text-sm align-middle"
-                } ${isRtl ? "text-left pl-6" : "text-right pr-6"}`}
+                } ${isRtl ? "text-left pl-6" : "text-right pr-6"} whitespace-nowrap`}
                 onClick={(e) => e.stopPropagation()}
               >
                 <ActionRenderer

@@ -115,12 +115,9 @@ export function TableHeader<TData = any>({
             style={{
               width: 44,
               minWidth: 44,
-              position: sticky ? "sticky" : undefined,
-              [isRtl ? "right" : "left"]: 0,
-              zIndex: 12,
               backgroundColor: theme.colors?.theadBg || undefined,
             }}
-            className="w-11 px-4 py-3 text-center align-middle"
+            className="w-11 px-4 py-3.5 text-center align-middle"
           >
             <input
               type="checkbox"
@@ -260,9 +257,7 @@ export function TableHeader<TData = any>({
           <th
             style={{
               width: actionsWidth || "auto",
-              position: sticky ? "sticky" : undefined,
-              [isRtl ? "left" : "right"]: 0,
-              zIndex: 12,
+              minWidth: typeof actionsWidth === "number" ? actionsWidth : undefined,
               backgroundColor: theme.colors?.theadBg || undefined,
             }}
             className={`${

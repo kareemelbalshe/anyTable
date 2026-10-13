@@ -144,7 +144,10 @@ export const REAL_WORLD_ORDERS_DB: EnterpriseOrder[] = Array.from({ length: 120 
       name: cust.name,
       email: cust.email,
       phone: `+20 10${Math.floor(10000000 + Math.random() * 89999999)}`,
-      avatar: getInitialsAvatar(cust.name, idx),
+      avatar:
+        cust.name === "Kareem Elbalshe"
+          ? "https://github.com/kareemelbalshe.png"
+          : getInitialsAvatar(cust.name, idx),
       tier: cust.tier as any,
     },
     items,

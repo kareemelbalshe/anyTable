@@ -135,6 +135,7 @@ export const EnterpriseOrdersTab: React.FC<EnterpriseOrdersTabProps> = ({
         rowKey="id"
         exportable={{ csv: true, json: true, filename: "enterprise-orders" }}
         resizableColumns={true}
+        actionsWidth={340}
         api={{
           fetcher: fetchEnterpriseOrdersApi,
           params: enterpriseFilterTier ? { tier: enterpriseFilterTier } : undefined,
@@ -173,7 +174,7 @@ export const EnterpriseOrdersTab: React.FC<EnterpriseOrdersTabProps> = ({
             key: "orderNumber",
             title: "Order #",
             width: 110,
-            pinned: "left",
+            minWidth: 100,
             sortable: true,
             render: (val) => (
               <span className="font-mono font-bold text-xs text-primary bg-primary/10 px-2 py-1 rounded-lg border border-primary/20">
@@ -184,6 +185,7 @@ export const EnterpriseOrdersTab: React.FC<EnterpriseOrdersTabProps> = ({
           {
             key: "customer.name",
             title: "Customer Profile",
+            minWidth: 220,
             sortable: true,
             render: (_, row) => (
               <div className="flex items-center gap-3">
@@ -192,7 +194,10 @@ export const EnterpriseOrdersTab: React.FC<EnterpriseOrdersTabProps> = ({
                   alt={row.customer.name}
                   className="w-9 h-9 rounded-full object-cover border border-gray-200 dark:border-gray-700 shadow-sm shrink-0"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
+                    (e.target as HTMLImageElement).src =
+                      row.customer.name === "Kareem Elbalshe"
+                        ? "https://github.com/kareemelbalshe.png"
+                        : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
                   }}
                 />
                 <div>
@@ -201,6 +206,11 @@ export const EnterpriseOrdersTab: React.FC<EnterpriseOrdersTabProps> = ({
                     {row.customer.tier === "VIP Platinum" && (
                       <span className="text-[10px] bg-amber-500/10 text-amber-500 font-black px-1.5 py-0.2 rounded border border-amber-500/20">
                         👑 VIP
+                      </span>
+                    )}
+                    {row.customer.name === "Kareem Elbalshe" && (
+                      <span className="text-[10px] bg-primary/15 text-primary font-black px-1.5 py-0.2 rounded border border-primary/30">
+                        Author
                       </span>
                     )}
                   </div>
@@ -212,6 +222,7 @@ export const EnterpriseOrdersTab: React.FC<EnterpriseOrdersTabProps> = ({
           {
             key: "itemCount",
             title: "Products",
+            minWidth: 140,
             render: (count, row) => (
               <div>
                 <div className="font-bold text-xs text-gray-800 dark:text-gray-200">
@@ -227,6 +238,7 @@ export const EnterpriseOrdersTab: React.FC<EnterpriseOrdersTabProps> = ({
           {
             key: "totalAmount",
             title: "Total Amount",
+            minWidth: 150,
             type: "currency",
             currency: "EGP",
             sortable: true,
@@ -234,6 +246,7 @@ export const EnterpriseOrdersTab: React.FC<EnterpriseOrdersTabProps> = ({
           {
             key: "paymentStatus",
             title: "Payment",
+            minWidth: 120,
             type: "status",
             sortable: true,
             statusMap: {
@@ -246,6 +259,7 @@ export const EnterpriseOrdersTab: React.FC<EnterpriseOrdersTabProps> = ({
           {
             key: "fulfillmentStatus",
             title: "Fulfillment",
+            minWidth: 140,
             type: "status",
             sortable: true,
             statusMap: {
@@ -259,6 +273,7 @@ export const EnterpriseOrdersTab: React.FC<EnterpriseOrdersTabProps> = ({
           {
             key: "shippingAddress.city",
             title: "Destination",
+            minWidth: 140,
             sortable: true,
             render: (_, row) => (
               <div className="text-xs">

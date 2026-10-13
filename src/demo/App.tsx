@@ -153,6 +153,64 @@ export function App() {
 
       {/* Main Content Body */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex flex-col gap-6 flex-1 w-full">
+        {/* Creator Spotlight Card */}
+        <div className="bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-emerald-500/10 dark:from-blue-950/30 dark:via-purple-950/30 dark:to-emerald-950/30 border border-primary/20 rounded-3xl p-4 sm:p-5 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-all">
+          <div className="flex items-center gap-4">
+            <div className="relative shrink-0">
+              <img
+                src="https://github.com/kareemelbalshe.png"
+                alt="Kareem Elbalshe"
+                className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover border-2 border-primary/40 shadow-md"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src =
+                    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%233b82f6'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
+                }}
+              />
+              <span
+                className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full"
+                title="Active Creator"
+              />
+            </div>
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-base sm:text-lg font-black text-gray-900 dark:text-white">
+                  Kareem Elbalshe
+                </h2>
+                <span className="text-[11px] font-bold bg-primary/15 text-primary px-2.5 py-0.5 rounded-full border border-primary/30">
+                  Creator & Maintainer
+                </span>
+                <span className="text-[11px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full">
+                  v1.2.0 Active
+                </span>
+              </div>
+              <p className="text-xs text-gray-600 dark:text-gray-300 mt-1 max-w-2xl leading-relaxed">
+                Welcome to <strong>AnyTable</strong> — A zero-runtime-dependency React data table engine built for maximum speed (100k rows @ 60 FPS), REST auto-detection, native Arabic/RTL, and flexible developer ergonomics.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0 w-full md:w-auto justify-start md:justify-end">
+            <a
+              href="https://github.com/kareemelbalshe"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gray-900 text-white dark:bg-white dark:text-gray-900 text-xs font-bold shadow-sm hover:scale-105 active:scale-95 transition-all"
+            >
+              <span>🐙</span>
+              <span>GitHub Profile</span>
+            </a>
+            <a
+              href="https://github.com/kareemelbalshe/anyTable"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-primary text-white text-xs font-bold shadow-md shadow-primary/20 hover:bg-primary-soft hover:scale-105 active:scale-95 transition-all"
+            >
+              <span>⭐</span>
+              <span>Star Project</span>
+            </a>
+          </div>
+        </div>
+
         {/* Navigation Tabs Bar */}
         <div className="flex flex-wrap items-center gap-1.5 p-1.5 rounded-2xl bg-gray-100/90 dark:bg-slate-900/90 border border-gray-200/80 dark:border-gray-800 backdrop-blur-md">
           {DEMO_TABS.map((tab) => (

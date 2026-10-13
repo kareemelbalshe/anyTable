@@ -38,7 +38,7 @@ export const DemoHeader: React.FC<DemoHeaderProps> = ({
               <h1 className="text-lg sm:text-xl font-black tracking-tight text-gray-900 dark:text-white flex items-center gap-2">
                 AnyTable
                 <span className="text-[10px] sm:text-xs bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold px-2 py-0.5 rounded-full border border-emerald-500/30">
-                  v1.1.0
+                  v1.2.0
                 </span>
               </h1>
               <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium hidden sm:block">
@@ -65,6 +65,32 @@ export const DemoHeader: React.FC<DemoHeaderProps> = ({
 
         {/* Action Controls & Links */}
         <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 ml-auto">
+          {/* Creator Profile Link */}
+          <a
+            href="https://github.com/kareemelbalshe"
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gradient-to-r from-primary/10 via-purple-500/10 to-primary/10 hover:from-primary/20 hover:to-purple-500/20 text-gray-900 dark:text-white border border-primary/25 text-xs font-bold shadow-sm transition-all group active:scale-95 cursor-pointer"
+            title="Created by Kareem Elbalshe (@kareemelbalshe)"
+          >
+            <div className="relative">
+              <img
+                src="https://github.com/kareemelbalshe.png"
+                alt="Kareem Elbalshe"
+                className="w-5 h-5 rounded-full object-cover border border-primary/40 shadow-xs"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src =
+                    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%233b82f6'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
+                }}
+              />
+              <span className="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 bg-emerald-500 rounded-full" />
+            </div>
+            <span className="hidden sm:inline font-bold">Kareem Elbalshe</span>
+            <span className="text-[10px] bg-primary text-white font-black px-1.5 py-0.2 rounded-md shadow-xs">
+              Creator
+            </span>
+          </a>
+
           {/* Live RTL / Language Switcher */}
           {onToggleRtl && (
             <button
@@ -89,7 +115,7 @@ export const DemoHeader: React.FC<DemoHeaderProps> = ({
             title="View on npm registry"
           >
             <span className="font-mono font-black text-sm leading-none">npm</span>
-            <span className="hidden sm:inline">v1.1.0</span>
+            <span className="hidden sm:inline">v1.2.0</span>
           </a>
 
           {/* Official Repo Link */}

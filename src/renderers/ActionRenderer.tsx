@@ -177,7 +177,7 @@ export function ActionRenderer<TData = any>({
 
   return (
     <>
-      <div className="flex items-center justify-end gap-2 pr-2">
+      <div className="flex items-center justify-end gap-2 pr-2 whitespace-nowrap">
         {actions.map((action) => {
           // Check show / hide conditions
           if (typeof action.hide === "function" && action.hide(row)) return null;
@@ -214,7 +214,7 @@ export function ActionRenderer<TData = any>({
             return (
               <div
                 key={action.id}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 shrink-0"
                 title={tooltip || label}
               >
                 {label && <span className="text-xs font-semibold text-gray-500">{label}:</span>}
@@ -257,7 +257,7 @@ export function ActionRenderer<TData = any>({
               onClick={() => handleActionClick(action)}
               title={tooltip}
               style={action.color ? { backgroundColor: action.color, color: "#ffffff" } : undefined}
-              className={`inline-flex items-center justify-center gap-1.5 ${paddingClass} rounded-xl text-xs font-bold transition-all duration-200 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100 ${variantClass} ${customClass}`}
+              className={`inline-flex items-center justify-center gap-1.5 ${paddingClass} rounded-xl text-xs font-bold shrink-0 transition-all duration-200 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100 ${variantClass} ${customClass}`}
             >
               {isPending ? (
                 <span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
