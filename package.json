@@ -1,6 +1,6 @@
 {
   "name": "@kareemelbalshe/any-table",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Zero-config, zero-dependency smart data table for React (16.8+ to 19+) with 100k+ DOM virtualization, 3-tier REST API auto-detection, built-in CSV/Excel export, first-class RTL & Arabic, column resizing, pinning, and headless hook.",
   "keywords": [
     "react",
