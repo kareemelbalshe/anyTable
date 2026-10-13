@@ -1,11 +1,12 @@
 {
   "name": "@kareemelbalshe/any-table",
-  "version": "1.0.4",
-  "description": "A developer-facing, smart data table library with 3-tier API detection, auto columns, server/client search, sort & pagination, extensible action callbacks, and customizable themes.",
+  "version": "1.1.0",
+  "description": "Zero-config, zero-dependency smart data table for React (16.8+ to 19+) with 100k+ DOM virtualization, 3-tier REST API auto-detection, built-in CSV/Excel export, first-class RTL & Arabic, column resizing, pinning, and headless hook.",
   "keywords": [
     "react",
     "table",
     "data-table",
+    "datatable",
     "smart-table",
     "any-table",
     "pagination",
@@ -13,7 +14,20 @@
     "search",
     "auto-columns",
     "typescript",
-    "react-table"
+    "react-table",
+    "data-grid",
+    "grid",
+    "virtualization",
+    "virtual-table",
+    "big-data",
+    "zero-dependency",
+    "csv-export",
+    "excel-export",
+    "rtl",
+    "arabic",
+    "headless",
+    "react19",
+    "nextjs"
   ],
   "author": "Kareem Elbalshe",
   "license": "MIT",
@@ -35,6 +49,7 @@
   "files": [
     "dist",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "publishConfig": {

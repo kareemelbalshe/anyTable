@@ -1,5 +1,6 @@
 import React from "react";
 import { useAnyTableTheme } from "../theme/themeContext";
+import { TableMessages, enMessages } from "../i18n";
 
 export interface TablePaginationProps {
   page: number;
@@ -12,6 +13,8 @@ export interface TablePaginationProps {
   showPageSizeSelector?: boolean;
   showTotalCount?: boolean;
   pageWindow: number[];
+  messages?: TableMessages;
+  dir?: "ltr" | "rtl" | "auto";
 }
 
 export function TablePagination({
@@ -25,14 +28,18 @@ export function TablePagination({
   showPageSizeSelector = true,
   showTotalCount = true,
   pageWindow,
+  messages = enMessages,
+  dir = "ltr",
 }: TablePaginationProps) {
   const theme = useAnyTableTheme();
+  const isRtl = dir === "rtl";
 
   const startRecord = Math.min((page - 1) * pageSize + 1, totalRecords);
   const endRecord = Math.min(page * pageSize, totalRecords);
 
   return (
     <div
+      dir={dir}
       className={
         theme.classes?.paginationContainer ||
         "w-full flex flex-wrap items-center justify-between gap-4 pt-4 text-sm text-gray-600 dark:text-gray-400"
@@ -42,29 +49,48 @@ export function TablePagination({
       <div className="flex items-center gap-3">
         {showTotalCount && totalRecords > 0 ? (
           <span className="text-xs sm:text-sm font-medium">
-            Showing <strong className="text-gray-900 dark:text-white font-bold">{startRecord}</strong> to{" "}
-            <strong className="text-gray-900 dark:text-white font-bold">{endRecord}</strong> of{" "}
-            <strong className="text-gray-900 dark:text-white font-bold">{totalRecords.toLocaleString()}</strong> results
+            {messages.showing}{" "}
+            <strong className="text-gray-900 dark:text-white font-bold">
+              {startRecord}
+            </strong>{" "}
+            {messages.to}{" "}
+            <strong className="text-gray-900 dark:text-white font-bold">
+              {endRecord}
+            </strong>{" "}
+            {messages.of}{" "}
+            <strong className="text-gray-900 dark:text-white font-bold">
+              {totalRecords.toLocaleString()}
+            </strong>{" "}
+            {messages.results}
           </span>
         ) : (
-          <span className="text-xs sm:text-sm font-medium">Page {page} of {totalPages}</span>
+          <span className="text-xs sm:text-sm font-medium">
+            {messages.page} {page} {messages.of} {totalPages}
+          </span>
         )}
 
         {/* Page Size Selector */}
         {showPageSizeSelector && (
-          <div className="flex items-center gap-2 ml-2">
-            <span className="text-xs text-gray-500 hidden sm:inline">Rows:</span>
+          <div className="flex items-center gap-2 ml-2 rtl:ml-0 rtl:mr-2">
+            <span className="text-xs text-gray-500 hidden sm:inline">
+              {messages.rowsPerPage}:
+            </span>
             <select
               value={pageSize}
               onChange={(e) => onPageSizeChange(Number(e.target.value))}
+              aria-label={messages.rowsPerPage}
               className={
                 theme.classes?.paginationSelect ||
                 "h-8 px-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 text-xs font-semibold text-gray-800 dark:text-gray-200 focus:outline-none focus:border-primary cursor-pointer"
               }
             >
               {pageSizeOptions.map((opt) => (
-                <option key={opt} value={opt} className="bg-white dark:bg-slate-800 text-gray-900 dark:text-white">
-                  {opt} / page
+                <option
+                  key={opt}
+                  value={opt}
+                  className="bg-white dark:bg-slate-800 text-gray-900 dark:text-white"
+                >
+                  {opt}
                 </option>
               ))}
             </select>
@@ -73,19 +99,24 @@ export function TablePagination({
       </div>
 
       {/* Pagination Controls */}
-      <div className="flex items-center gap-1.5 ml-auto">
+      <div
+        className={`flex items-center gap-1.5 ${
+          isRtl ? "mr-auto" : "ml-auto"
+        }`}
+      >
         {/* Previous Button */}
         <button
           type="button"
           disabled={page <= 1}
           onClick={() => onPageChange(page - 1)}
-          aria-label="Previous Page"
+          aria-label={messages.prevPage}
+          title={messages.prevPage}
           className={`${
             theme.classes?.paginationButton ||
-            "h-8 min-w-[32px] px-2.5 flex items-center justify-center rounded-xl font-bold text-xs bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-700 disabled:opacity-40"
+            "h-8 min-w-[32px] px-2.5 flex items-center justify-center rounded-xl font-bold text-xs bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-700 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
           }`}
         >
-          ‹
+          {isRtl ? "›" : "‹"}
         </button>
 
         {/* Page Number Pills */}
@@ -98,10 +129,10 @@ export function TablePagination({
               onClick={() => onPageChange(p)}
               className={`${
                 theme.classes?.paginationButton ||
-                "h-8 min-w-[32px] px-2.5 flex items-center justify-center rounded-xl font-bold text-xs"
+                "h-8 min-w-[32px] px-2.5 flex items-center justify-center rounded-xl font-bold text-xs transition shadow-sm cursor-pointer"
               } ${
                 isActive
-                  ? theme.classes?.paginationButtonActive || "bg-primary text-white shadow-sm shadow-primary/30"
+                  ? "bg-primary text-white shadow-primary/20 scale-105"
                   : "bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-700"
               }`}
             >
@@ -115,15 +146,16 @@ export function TablePagination({
           type="button"
           disabled={page >= totalPages}
           onClick={() => onPageChange(page + 1)}
-          aria-label="Next Page"
+          aria-label={messages.nextPage}
+          title={messages.nextPage}
           className={`${
             theme.classes?.paginationButton ||
-            "h-8 min-w-[32px] px-2.5 flex items-center justify-center rounded-xl font-bold text-xs bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-700 disabled:opacity-40"
+            "h-8 min-w-[32px] px-2.5 flex items-center justify-center rounded-xl font-bold text-xs bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-700 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
           }`}
         >
-          ›
+          {isRtl ? "‹" : "›"}
         </button>
       </div>
     </div>
   );
-};
+}

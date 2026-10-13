@@ -3,6 +3,14 @@ import { ColumnDef, SortDirection } from "./column.types";
 import { TableAction, SwitchAction } from "./action.types";
 import { ApiConfig, PaginationMeta } from "./api.types";
 import { AnyTableTheme, TablePreset } from "./theme.types";
+import { TableMessages } from "../i18n";
+
+export interface ExportConfig {
+  enabled?: boolean;
+  csv?: boolean;
+  json?: boolean;
+  filename?: string;
+}
 
 export type RowKeyResolver<TData = any> =
   | (keyof TData & string)
@@ -144,6 +152,11 @@ export interface TableInstance<TData = any> {
    * Scrolls table smoothly or directly to a specific row index (when virtualization is active).
    */
   scrollToIndex?: (index: number, align?: "start" | "center" | "end" | "auto") => void;
+
+  /**
+   * Triggers file download of the current table data (CSV or JSON).
+   */
+  exportData?: (format?: "csv" | "json", filename?: string) => void;
 }
 
 export interface AnyTableProps<TData = any> {
@@ -333,6 +346,31 @@ export interface AnyTableProps<TData = any> {
    * Ref object to expose imperative controller API.
    */
   tableRef?: React.Ref<TableInstance<TData>>;
+
+  /**
+   * Layout direction for the table ('ltr' | 'rtl' | 'auto'). Defaults to 'ltr'.
+   */
+  dir?: "ltr" | "rtl" | "auto";
+
+  /**
+   * Active locale string ('en' | 'ar' | string). Defaults to 'en'.
+   */
+  locale?: "en" | "ar" | string;
+
+  /**
+   * Optional custom translation messages dictionary to customize text strings.
+   */
+  messages?: Partial<TableMessages>;
+
+  /**
+   * Built-in CSV & JSON export engine configuration or boolean to enable export in toolbar.
+   */
+  exportable?: boolean | ExportConfig;
+
+  /**
+   * Enables interactive column width resizing handles on the table header. Defaults to false.
+   */
+  resizableColumns?: boolean;
 
   // ==========================================
   // BACKWARD COMPATIBILITY PROPS (Legacy Wasel)

@@ -1,4 +1,5 @@
 import React from "react";
+import { TableMessages, enMessages } from "../i18n";
 
 export interface TableEmptyStateProps {
   title?: string;
@@ -6,6 +7,7 @@ export interface TableEmptyStateProps {
   isSearchActive?: boolean;
   onClearSearch?: () => void;
   colSpan?: number;
+  messages?: TableMessages;
 }
 
 export function TableEmptyState({
@@ -14,11 +16,14 @@ export function TableEmptyState({
   isSearchActive = false,
   onClearSearch,
   colSpan,
+  messages = enMessages,
 }: TableEmptyStateProps) {
-  const defaultTitle = isSearchActive ? "No matching records found" : "No data available";
+  const defaultTitle = isSearchActive
+    ? messages.noRecordsTitle
+    : messages.noRecordsTitle;
   const defaultDescription = isSearchActive
-    ? "Try adjusting your search criteria or clear the search filter."
-    : "There are currently no records to display.";
+    ? messages.noRecordsDescription
+    : messages.noRecordsDescription;
 
   const content = (
     <div className="w-full py-16 px-6 flex flex-col items-center justify-center text-center any-table-fade-in">
@@ -38,9 +43,9 @@ export function TableEmptyState({
         <button
           type="button"
           onClick={onClearSearch}
-          className="px-4 py-2 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary-soft transition-all shadow-sm shadow-primary/20 active:scale-95"
+          className="px-4 py-2 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary-soft transition-all shadow-sm shadow-primary/20 active:scale-95 cursor-pointer"
         >
-          Clear Search Filter
+          {messages.clearSearch}
         </button>
       )}
     </div>
@@ -59,4 +64,4 @@ export function TableEmptyState({
   }
 
   return content;
-};
+}

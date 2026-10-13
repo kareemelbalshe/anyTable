@@ -8,11 +8,34 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-Strict%205.0%2B-blue)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-16.8%2B%20%7C%2017%20%7C%2018%20%7C%2019-61dafb)](https://react.dev/)
 [![Dependencies](https://img.shields.io/badge/Dependencies-0%20(Zero)-success)](package.json)
+[![RTL & Arabic](https://img.shields.io/badge/RTL%20%26%20Arabic-First--Class-emerald)](https://github.com/kareemelbalshe/anyTable)
+
+---
+
+## 💎 Why AnyTable? (The Value Proposition & Competitive Edge)
+
+Building table grids in React is notoriously painful: either you write 100+ lines of TanStack Table boilerplate just to render a simple searchable paginated table, or you import massive enterprise grids (AG-Grid, MUI DataGrid) that bloat your bundle size and lock advanced features behind paid enterprise licenses.
+
+**AnyTable solves this once and for all:**
+
+| Feature / Metric | 🚀 **AnyTable** | 🐢 TanStack Table | 💼 AG-Grid | 🎨 MUI DataGrid |
+| :--- | :--- | :--- | :--- | :--- |
+| **Setup Boilerplate** | **0 lines** (`<AnyTable data={d} />`) | 80–150+ lines boilerplate | 40+ lines config | 30+ lines config |
+| **Runtime Dependencies** | **0 (Zero Dependencies)** | Depends on core hooks | Heavy (~300KB–1.2MB) | Heavy (MUI ecosystem) |
+| **DOM Virtualization (100k+ rows)** | **Built-in (Native 60fps)** | Requires `@tanstack/react-virtual` | Paid Enterprise / Heavy | Paid Pro / Heavy |
+| **REST API 3-Tier Auto Normalizer** | **Built-in Auto-Detect** | Manual wiring | Manual | Manual |
+| **Native CSV & Excel Export** | **Built-in (UTF-8 BOM)** | Needs external library | Paid Enterprise | Paid Pro |
+| **First-Class Arabic & RTL Support** | **Built-in (`dir="rtl"`)** | Manual CSS overrides | Basic | Basic |
+| **Column Resizing & Pinning** | **Built-in** | Complex manual setup | Enterprise | Pro only |
+| **Headless Mode Available** | **Yes (`useAnyTable()`)** | Yes | No (Strict UI) | No (Strict UI) |
+| **React Compatibility** | **React 16.8+ to 19+** | React 18+ mostly | React 17+ | React 17+ |
+| **License** | **100% Free MIT** | MIT (headless only) | Free / $$ Enterprise | Free / $$ Commercial |
 
 ---
 
 ## 📑 Table of Contents (فهرس المحتويات)
 
+- [💎 Why AnyTable? (The Value Proposition)](#-why-anytable-the-value-proposition--competitive-edge)
 - [🌟 Core Philosophy & Architecture](#-core-philosophy--architecture)
 - [📦 Installation & Setup](#-installation--setup)
 - [⚡ Quick Start Guide (دليل البدء السريع)](#-quick-start-guide)
@@ -22,10 +45,11 @@
   - [Level 1: Auto (Zero-Config Array Detection)](#level-1-auto-zero-config-array-detection)
   - [Level 2: Dot-Notation Path Mapping](#level-2-dot-notation-path-mapping)
   - [Level 3: Custom Response Transformer](#level-3-custom-response-transformer)
+- [📊 Built-in CSV & Excel Export Engine](#-built-in-csv--excel-export-engine)
+- [🌍 First-Class RTL & Internationalization (Arabic & English)](#-first-class-rtl--internationalization-arabic--english)
+- [📌 Column Pinning & Interactive Resizing](#-column-pinning--interactive-resizing)
+- [🧩 Standalone Headless Hook (`useAnyTable`)](#-standalone-headless-hook-useanytable)
 - [🎯 Row Actions & Instant PATCH Switches](#-row-actions--instant-patch-switches)
-  - [Action Buttons & Modal Triggers](#1-action-buttons)
-  - [Instant PATCH / PUT Toggle Switch](#2-instant-patch--put-toggle-switch)
-  - [Destructive Actions with Confirmation Modal](#3-destructive-actions-with-confirmation-modal)
 - [🛠️ Column Types & Smart Renderers](#️-column-types--smart-renderers)
 - [🕹️ Imperative Controller API (`tableRef`)](#️-imperative-controller-api-tableref)
 - [⚡ High-Performance DOM Virtualization (100,000+ Rows)](#-high-performance-dom-virtualization-100000-rows)
@@ -226,6 +250,121 @@ For legacy endpoints or GraphQL formats that require custom parsing:
     }),
   }}
 />
+```
+
+---
+
+## 📊 Built-in CSV & Excel Export Engine
+
+Export your data to **CSV** or **JSON** instantly with zero external dependencies. AnyTable automatically injects the **UTF-8 BOM (`\uFEFF`)** byte mark, guaranteeing that Microsoft Excel opens files with Arabic, UTF-8 symbols, and special characters cleanly without broken encoding!
+
+```tsx
+<AnyTable
+  data={employees}
+  exportable={{
+    csv: true,
+    json: true,
+    filename: "employees-report-2026",
+  }}
+/>
+```
+
+Or trigger downloads programmatically via the imperative ref:
+```tsx
+const tableRef = useRef<TableInstance>(null);
+
+// In your custom button:
+tableRef.current?.exportData("csv", "quarterly-report");
+```
+
+---
+
+## 🌍 First-Class RTL & Internationalization (Arabic & English)
+
+AnyTable is built from the ground up with bidirectional **RTL-First** architecture. Simply pass `dir="rtl"` or `locale="ar"`:
+
+```tsx
+<AnyTable
+  data={users}
+  dir="rtl"
+  locale="ar"
+  title="قائمة المستخدمين والموظفين"
+/>
+```
+
+- **Automatic Mirroring**: Headers, actions column, search bar, sort indicators, and pagination arrows flip to Arabic RTL layout automatically.
+- **Built-in Dictionaries**: Full presets for English (`"en"`) and Arabic (`"ar"`).
+- **Custom Messages**: Override any label via the `messages` prop:
+  ```tsx
+  <AnyTable
+    data={orders}
+    locale="ar"
+    messages={{
+      searchPlaceholder: "ابحث برقم الطلب أو العميل...",
+      exportCsv: "تحميل تقرير إكسل",
+    }}
+  />
+  ```
+
+---
+
+## 📌 Column Pinning & Interactive Resizing
+
+For dense tables with many columns, pin critical columns to the left or right edge, and allow users to resize column widths dynamically:
+
+```tsx
+<AnyTable
+  data={orders}
+  resizableColumns={true} // Enables draggable column resize handles
+  columns={[
+    { key: "id", title: "Order ID", width: 90, pinned: "left" }, // Sticky Left
+    { key: "customer.name", title: "Customer", width: 180 },
+    { key: "total", title: "Amount", width: 120 },
+    { key: "status", title: "Status", width: 130, pinned: "right" }, // Sticky Right
+  ]}
+/>
+```
+
+---
+
+## 🧩 Standalone Headless Hook (`useAnyTable`)
+
+Want 100% custom UI styling (e.g. Shadcn UI, Radix, Tailwind CSS) while leveraging AnyTable's smart auto-columns, 3-tier API detector, server/client pagination, debounced search, sorting, and export engine?
+
+Use the headless hook:
+
+```tsx
+import { useAnyTable } from "@kareemelbalshe/any-table";
+
+export function CustomGrid() {
+  const {
+    rows,
+    columns,
+    totalRecords,
+    loading,
+    search,
+    sorting,
+    pagination,
+    selection,
+    exportData,
+  } = useAnyTable({
+    data: myData,
+    pagination: { defaultPageSize: 10 },
+  });
+
+  return (
+    <div>
+      <input
+        value={search.query}
+        onChange={(e) => search.setSearch(e.target.value)}
+        placeholder="Type to search..."
+      />
+      <button onClick={() => exportData("csv")}>Export to Excel</button>
+
+      {/* Render your custom table or card grid */}
+    </div>
+  );
+}
 ```
 
 ---

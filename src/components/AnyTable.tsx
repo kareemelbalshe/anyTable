@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useCallback, useRef } from "react";
 import { AnyTableProps, TableState, TableInstance } from "../types/table.types";
 import { resolveColumns } from "../columns/columnResolver";
+import { computePinnedStyles } from "../columns/pinningUtils";
 import { resolveTableActions } from "../adapters/legacyActionsAdapter";
 import { useAnyTableSearch } from "../hooks/useAnyTableSearch";
 import { useAnyTableSorting } from "../hooks/useAnyTableSorting";
@@ -18,6 +19,8 @@ import { TableSkeleton } from "./TableSkeleton";
 import { TableEmptyState } from "./TableEmptyState";
 import { TableErrorState } from "./TableErrorState";
 import { getNestedValue } from "../adapters/objectUtils";
+import { resolveMessages } from "../i18n";
+import { exportToCsv, exportToJson } from "../export/exportEngine";
 
 export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
   const {
@@ -29,7 +32,7 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
     title,
     subtitle,
     actions: explicitActions,
-    actionsTitle = "Actions",
+    actionsTitle,
     actionsWidth,
     search = true,
     sorting = true,
@@ -57,6 +60,13 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
     stickyHeader = false,
     tableRef,
 
+    // Internationalization & Features
+    dir,
+    locale = "en",
+    messages: customMessages,
+    exportable = false,
+    resizableColumns = false,
+
     // Legacy Wasel Props
     thead,
     headerData,
@@ -80,6 +90,18 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
 
   const theme = useAnyTableTheme();
 
+  // 0. Resolve Localization & Direction
+  const resolvedMessages = useMemo(
+    () => resolveMessages(locale, customMessages),
+    [locale, customMessages]
+  );
+
+  const resolvedDir = useMemo<"ltr" | "rtl">(() => {
+    if (dir === "ltr" || dir === "rtl") return dir;
+    if (locale?.toLowerCase().startsWith("ar")) return "rtl";
+    return "ltr";
+  }, [dir, locale]);
+
   // 1. Data Source Resolution (support tbodys legacy prop)
   const resolvedData = useMemo(() => {
     return directData || tbodys || undefined;
@@ -102,7 +124,13 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
     });
   }, [resolvedData, rawColumns, autoColumns, thead, headerData]);
 
-  // 3. Resolve Row Key
+  // 3. Column Width Resizing State
+  const [columnWidths, setColumnWidths] = useState<Record<string, number>>({});
+  const handleResizeColumn = useCallback((key: string, width: number) => {
+    setColumnWidths((prev) => ({ ...prev, [key]: width }));
+  }, []);
+
+  // 4. Resolve Row Key
   const rowKeyResolver = useCallback(
     (row: TData, index: number): string | number => {
       if (typeof rowKey === "function") {
@@ -118,7 +146,7 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
     [rowKey]
   );
 
-  // 4. Setup Hooks
+  // 5. Setup Hooks
   const {
     enabled: isSearchEnabled,
     search: searchQuery,
@@ -138,7 +166,7 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
     resetSorting,
   } = useAnyTableSorting({ config: sorting });
 
-  // 5. Build Actions (Combining explicit actions and legacy Wasel actions)
+  // 6. Build Actions (Combining explicit actions and legacy Wasel actions)
   const resolvedActions = useMemo(
     () =>
       resolveTableActions<TData>({
@@ -172,8 +200,17 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
   );
 
   // Initial Pagination State
-  const [activePage, setActivePage] = useState(1);
-  const [activePageSize, setActivePageSize] = useState(10);
+  const initialPageSize =
+    typeof pagination === "object" && pagination !== null && pagination.defaultPageSize
+      ? pagination.defaultPageSize
+      : 10;
+  const initialPage =
+    typeof pagination === "object" && pagination !== null && pagination.defaultPage
+      ? pagination.defaultPage
+      : 1;
+
+  const [activePage, setActivePage] = useState(initialPage);
+  const [activePageSize, setActivePageSize] = useState(initialPageSize);
 
   const isVirtualRequested = useMemo(() => {
     if (typeof virtualized === "object" && virtualized !== null) {
@@ -186,7 +223,6 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
     if (pagination !== undefined) {
       return pagination;
     }
-    // When virtualized is requested and pagination is not explicitly provided, disable pagination
     if (isVirtualRequested) {
       return false;
     }
@@ -200,7 +236,7 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
     return Boolean(resolvedPaginationConfig);
   }, [resolvedPaginationConfig]);
 
-  // 6. Data Orchestration Hook
+  // 7. Data Orchestration Hook
   const {
     rows,
     totalRecords,
@@ -241,7 +277,7 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
     },
   });
 
-  // 7. Virtualization Hook
+  // 8. Virtualization Hook
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
   const {
@@ -263,7 +299,7 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
     return virtualSliceRows(rows);
   }, [isVirtualized, rows, virtualSliceRows]);
 
-  // 8. Selection Hook
+  // 9. Selection Hook
   const {
     selectedKeys,
     selectedRows,
@@ -289,7 +325,45 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
     [refresh, loading, page, selectedRows, setPage]
   );
 
-  // 9. Controller Ref Exposure
+  // 10. Column Pinning Offsets
+  const hasActions = resolvedActions.length > 0;
+  const pinnedStyles = useMemo(() => {
+    return computePinnedStyles(resolvedColumns, {
+      selectable,
+      hasActions,
+      actionsWidth,
+      columnWidths,
+      isRtl: resolvedDir === "rtl",
+    });
+  }, [
+    resolvedColumns,
+    selectable,
+    hasActions,
+    actionsWidth,
+    columnWidths,
+    resolvedDir,
+  ]);
+
+  // 11. Native Export Handler
+  const handleExport = useCallback(
+    (format: "csv" | "json" = "csv", customFilename?: string) => {
+      const defaultName =
+        (typeof exportable === "object" && exportable?.filename) ||
+        customFilename ||
+        (typeof title === "string"
+          ? title.toLowerCase().replace(/\s+/g, "-")
+          : "table-export");
+
+      if (format === "json") {
+        exportToJson(rows, defaultName);
+      } else {
+        exportToCsv(rows, resolvedColumns, defaultName);
+      }
+    },
+    [rows, resolvedColumns, exportable, title]
+  );
+
+  // 12. Controller Ref Exposure
   useAnyTableController({
     tableRef,
     refresh,
@@ -303,6 +377,7 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
     selectedRows,
     clearSelection,
     scrollToIndex,
+    exportData: handleExport,
     getState: (): TableState<TData> => ({
       data: rows,
       loading,
@@ -321,7 +396,6 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
   });
 
   const displayTitle = title || titleHeader;
-  const hasActions = resolvedActions.length > 0;
 
   const themeStyle = useMemo<React.CSSProperties>(() => {
     const s: Record<string, any> = {};
@@ -349,8 +423,13 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
 
   return (
     <div
+      dir={resolvedDir}
+      lang={locale}
       style={themeStyle}
-      className={`any-table-wrapper ${theme.classes?.container || "w-full flex flex-col gap-4 font-sans text-gray-900 dark:text-gray-100"} ${className}`}
+      className={`any-table-wrapper ${
+        theme.classes?.container ||
+        "w-full flex flex-col gap-4 font-sans text-gray-900 dark:text-gray-100"
+      } ${className}`}
     >
       {/* Top Section Toolbar */}
       <TableToolbar
@@ -366,6 +445,10 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
         add={add}
         linkAdd={linkAdd}
         addHandler={addHandler}
+        messages={resolvedMessages}
+        exportable={exportable}
+        onExport={handleExport}
+        dir={resolvedDir}
       />
 
       {/* Table Container Box */}
@@ -384,11 +467,15 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
           ) : errorComponent ? (
             errorComponent
           ) : (
-            <TableErrorState error={error} onRetry={refresh} />
+            <TableErrorState
+              error={error}
+              onRetry={refresh}
+              messages={resolvedMessages}
+            />
           )
         ) : (
           <table
-            className={`${theme.classes?.table || "w-full border-collapse text-left text-sm"} ${
+            className={`${theme.classes?.table || "w-full border-collapse text-left rtl:text-right text-sm"} ${
               compact || theme.density === "compact" ? "text-xs" : ""
             } ${
               stickyHeader || isVirtualized ? "relative" : ""
@@ -409,6 +496,12 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
                 onToggleSelectAll={handleToggleSelectAll}
                 headerClassName={headerClassName}
                 sticky={stickyHeader || isVirtualized}
+                messages={resolvedMessages}
+                dir={resolvedDir}
+                resizableColumns={resizableColumns}
+                columnWidths={columnWidths}
+                onResizeColumn={handleResizeColumn}
+                pinnedStyles={pinnedStyles}
               />
             )}
 
@@ -418,7 +511,11 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
                 loadingComponent
               ) : (
                 <TableSkeleton
-                  columnsCount={resolvedColumns.length + (selectable ? 1 : 0) + (hasActions ? 1 : 0)}
+                  columnsCount={
+                    resolvedColumns.length +
+                    (selectable ? 1 : 0) +
+                    (hasActions ? 1 : 0)
+                  }
                   rowsCount={pageSize || 5}
                 />
               )
@@ -430,7 +527,12 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
                 <TableEmptyState
                   title={emptyTitle}
                   description={emptyDescription}
-                  colSpan={resolvedColumns.length + (selectable ? 1 : 0) + (hasActions ? 1 : 0)}
+                  colSpan={
+                    resolvedColumns.length +
+                    (selectable ? 1 : 0) +
+                    (hasActions ? 1 : 0)
+                  }
+                  messages={resolvedMessages}
                 />
               )
             ) : (
@@ -452,6 +554,11 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
                 paddingTop={paddingTop}
                 paddingBottom={paddingBottom}
                 startIndex={startIndex}
+                pinnedStyles={pinnedStyles}
+                columnWidths={columnWidths}
+                dir={resolvedDir}
+                actionsWidth={actionsWidth}
+                messages={resolvedMessages}
               />
             )}
           </table>
@@ -471,6 +578,8 @@ export function AnyTableInner<TData = any>(props: AnyTableProps<TData>) {
           showPageSizeSelector={paginationConfig.showPageSizeSelector}
           showTotalCount={paginationConfig.showTotalCount}
           pageWindow={getPageWindow(5)}
+          messages={resolvedMessages}
+          dir={resolvedDir}
         />
       )}
     </div>

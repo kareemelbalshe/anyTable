@@ -87,6 +87,16 @@ export interface ColumnDef<TData = any, TValue = any> {
   maxWidth?: string | number;
 
   /**
+   * Pin column to the left or right edge during horizontal scrolling.
+   */
+  pinned?: "left" | "right";
+
+  /**
+   * Whether this column width can be resized interactively by dragging. Defaults to true if table resizableColumns is enabled.
+   */
+  resizable?: boolean;
+
+  /**
    * Hide this column conditionally or statically.
    */
   hidden?: boolean | ((context: { data: TData[] }) => boolean);

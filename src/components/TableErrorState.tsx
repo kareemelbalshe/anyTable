@@ -1,15 +1,23 @@
 import React from "react";
+import { TableMessages, enMessages } from "../i18n";
 
 export interface TableErrorStateProps {
   error: any;
   onRetry?: () => void;
+  messages?: TableMessages;
 }
 
-export function TableErrorState({ error, onRetry }: TableErrorStateProps) {
+export function TableErrorState({
+  error,
+  onRetry,
+  messages = enMessages,
+}: TableErrorStateProps) {
   const errorMessage =
     typeof error === "string"
       ? error
-      : error?.message || error?.response?.data?.message || "Failed to load table data.";
+      : error?.message ||
+        error?.response?.data?.message ||
+        messages.errorDescription;
 
   return (
     <div className="w-full py-14 px-6 flex flex-col items-center justify-center text-center any-table-fade-in">
@@ -18,7 +26,7 @@ export function TableErrorState({ error, onRetry }: TableErrorStateProps) {
       </div>
 
       <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200 mb-1">
-        Unable to load data
+        {messages.errorTitle}
       </h3>
 
       <p className="text-xs sm:text-sm text-rose-600 dark:text-rose-400 font-medium max-w-md mb-5 leading-relaxed bg-rose-500/5 px-3 py-1.5 rounded-lg border border-rose-500/10">
@@ -29,12 +37,12 @@ export function TableErrorState({ error, onRetry }: TableErrorStateProps) {
         <button
           type="button"
           onClick={onRetry}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-xs font-bold hover:bg-gray-800 dark:hover:bg-gray-100 transition-all shadow-md active:scale-95"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-xs font-bold hover:bg-gray-800 dark:hover:bg-gray-100 transition-all shadow-md active:scale-95 cursor-pointer"
         >
           <span>🔄</span>
-          <span>Retry Request</span>
+          <span>{messages.retry}</span>
         </button>
       )}
     </div>
   );
-};
+}

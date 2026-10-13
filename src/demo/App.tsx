@@ -98,8 +98,21 @@ export function App() {
   const currentPrimary = currentPresetTheme.colors?.primary || "#2667EC";
   const currentPrimarySoft = currentPresetTheme.colors?.primaryLight || "#397FF6";
 
+  const [isRtl, setIsRtl] = useState(false);
+
+  const toggleRtl = () => {
+    setIsRtl((prev) => {
+      const next = !prev;
+      document.documentElement.dir = next ? "rtl" : "ltr";
+      document.documentElement.lang = next ? "ar" : "en";
+      showToast(next ? "تم تفعيل الوضع العربي (RTL) بالكامل! 🇸🇦" : "Switched to English (LTR) mode! 🇺🇸");
+      return next;
+    });
+  };
+
   return (
     <div
+      dir={isRtl ? "rtl" : "ltr"}
       style={
         {
           "--any-table-primary": currentPrimary,
@@ -112,7 +125,7 @@ export function App() {
     >
       {/* Toast Notification */}
       {notification && (
-        <div className="fixed bottom-6 right-6 z-50 bg-primary text-white font-bold text-xs sm:text-sm px-5 py-3 rounded-2xl shadow-2xl shadow-primary/30 any-table-fade-in flex items-center gap-2.5 border border-white/20">
+        <div className="fixed bottom-6 right-6 rtl:right-auto rtl:left-6 z-50 bg-primary text-white font-bold text-xs sm:text-sm px-5 py-3 rounded-2xl shadow-2xl shadow-primary/30 any-table-fade-in flex items-center gap-2.5 border border-white/20">
           <span className="text-base">✨</span>
           <span>{notification}</span>
         </div>
@@ -133,6 +146,9 @@ export function App() {
         }}
         isDarkMode={isDarkMode}
         onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
+        isRtl={isRtl}
+        onToggleRtl={toggleRtl}
+        onCopyInstall={() => copyToClipboard("npm i @kareemelbalshe/any-table", "install command")}
       />
 
       {/* Main Content Body */}

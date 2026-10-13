@@ -133,6 +133,8 @@ export const EnterpriseOrdersTab: React.FC<EnterpriseOrdersTabProps> = ({
         title="Enterprise Orders & Logistics Fulfillment"
         subtitle="Full-featured enterprise table with server search, multi-tier status badges, instant PATCH switches, and invoice popups."
         rowKey="id"
+        exportable={{ csv: true, json: true, filename: "enterprise-orders" }}
+        resizableColumns={true}
         api={{
           fetcher: fetchEnterpriseOrdersApi,
           params: enterpriseFilterTier ? { tier: enterpriseFilterTier } : undefined,
@@ -171,6 +173,7 @@ export const EnterpriseOrdersTab: React.FC<EnterpriseOrdersTabProps> = ({
             key: "orderNumber",
             title: "Order #",
             width: 110,
+            pinned: "left",
             sortable: true,
             render: (val) => (
               <span className="font-mono font-bold text-xs text-primary bg-primary/10 px-2 py-1 rounded-lg border border-primary/20">

@@ -6,6 +6,9 @@ export interface DemoHeaderProps {
   onSelectPreset: (preset: TablePreset) => void;
   isDarkMode: boolean;
   onToggleDarkMode: () => void;
+  isRtl?: boolean;
+  onToggleRtl?: () => void;
+  onCopyInstall?: () => void;
 }
 
 export const DemoHeader: React.FC<DemoHeaderProps> = ({
@@ -13,13 +16,19 @@ export const DemoHeader: React.FC<DemoHeaderProps> = ({
   onSelectPreset,
   isDarkMode,
   onToggleDarkMode,
+  isRtl = false,
+  onToggleRtl,
+  onCopyInstall,
 }) => {
   return (
     <header className="border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-40 transition-colors">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
         {/* Logo & Project Title */}
         <div className="flex items-center gap-3">
-          <a href="https://kareemelbalshe.github.io/anyTable/" className="group flex items-center gap-3">
+          <a
+            href="https://kareemelbalshe.github.io/anyTable/"
+            className="group flex items-center gap-3"
+          >
             <img
               src={`${import.meta.env.BASE_URL}logo.svg`}
               alt="AnyTable Logo"
@@ -28,42 +37,59 @@ export const DemoHeader: React.FC<DemoHeaderProps> = ({
             <div>
               <h1 className="text-lg sm:text-xl font-black tracking-tight text-gray-900 dark:text-white flex items-center gap-2">
                 AnyTable
-                <span className="text-[10px] sm:text-xs bg-primary/10 text-primary font-bold px-2 py-0.5 rounded-full border border-primary/20">
-                  v1.0.2
+                <span className="text-[10px] sm:text-xs bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold px-2 py-0.5 rounded-full border border-emerald-500/30">
+                  v1.1.0
                 </span>
               </h1>
               <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium hidden sm:block">
-                Smart Autonomous Data Table for React
+                Smart Autonomous React Data Table • 100k Rows • RTL • Export
               </p>
             </div>
           </a>
         </div>
 
-        {/* Author Badge & Quick Ecosystem Links */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3 ml-auto">
-          {/* Author Profile Link */}
+        {/* Quick Install Copy Strip */}
+        <div className="hidden lg:flex items-center gap-2 bg-gray-100 dark:bg-slate-800/80 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 text-xs font-mono text-gray-700 dark:text-gray-300">
+          <span className="text-primary font-bold">$</span>
+          <span>npm i @kareemelbalshe/any-table</span>
+          {onCopyInstall && (
+            <button
+              onClick={onCopyInstall}
+              className="ml-1.5 p-1 rounded-md hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-500 hover:text-primary transition cursor-pointer"
+              title="Copy install command"
+            >
+              📋
+            </button>
+          )}
+        </div>
+
+        {/* Action Controls & Links */}
+        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 ml-auto">
+          {/* Live RTL / Language Switcher */}
+          {onToggleRtl && (
+            <button
+              onClick={onToggleRtl}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer border ${
+                isRtl
+                  ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+                  : "bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-emerald-500/40"
+              }`}
+              title="Toggle RTL Arabic layout"
+            >
+              <span>{isRtl ? "🇸🇦 العربية (RTL)" : "🇺🇸 English (LTR)"}</span>
+            </button>
+          )}
+
+          {/* NPM Package Link */}
           <a
-            href="https://github.com/kareemelbalshe"
+            href="https://www.npmjs.com/package/@kareemelbalshe/any-table"
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-gray-700 hover:border-primary/50 text-gray-700 dark:text-gray-200 text-xs font-bold transition-all shadow-sm group"
-            title="Creator: Kareem Elbalshe on GitHub"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/30 text-xs font-black shadow-sm transition-all"
+            title="View on npm registry"
           >
-            <img
-              src="https://github.com/kareemelbalshe.png"
-              alt="Kareem Elbalshe"
-              className="w-5 h-5 rounded-full object-cover border border-primary/40 group-hover:scale-110 transition-transform"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = "none";
-              }}
-            />
-            <span className="hidden md:inline text-gray-500 dark:text-gray-400 font-normal">By</span>
-            <span className="font-black text-gray-900 dark:text-white group-hover:text-primary transition-colors">
-              Kareem Elbalshe
-            </span>
-            <span className="text-[10px] bg-primary/15 text-primary px-1.5 py-0.2 rounded font-mono">
-              Creator
-            </span>
+            <span className="font-mono font-black text-sm leading-none">npm</span>
+            <span className="hidden sm:inline">v1.1.0</span>
           </a>
 
           {/* Official Repo Link */}
@@ -72,26 +98,27 @@ export const DemoHeader: React.FC<DemoHeaderProps> = ({
             target="_blank"
             rel="noreferrer"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-900 text-white dark:bg-white dark:text-gray-900 text-xs font-black shadow-sm hover:opacity-90 transition-all"
+            title="View GitHub Repository"
           >
             <span>🐙</span>
-            <span className="hidden sm:inline">GitHub Repo</span>
+            <span className="hidden sm:inline">GitHub</span>
             <span className="text-amber-400 dark:text-amber-600 font-normal">★</span>
           </a>
 
           {/* Preset Selector */}
-          <div className="flex items-center gap-1.5 bg-gray-100 dark:bg-slate-800 px-2.5 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700">
-            <span className="text-xs font-bold text-gray-500 dark:text-gray-400 hidden lg:inline">🎨 Preset:</span>
+          <div className="flex items-center gap-1 bg-gray-100 dark:bg-slate-800 px-2 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700">
+            <span className="text-[11px] font-bold text-gray-500 dark:text-gray-400 hidden xl:inline">🎨 Preset:</span>
             <select
               value={selectedPreset}
               onChange={(e) => onSelectPreset(e.target.value as TablePreset)}
-              className="bg-transparent text-xs font-black text-gray-900 dark:text-white focus:outline-none cursor-pointer pr-1"
+              className="bg-transparent text-xs font-bold text-gray-900 dark:text-white focus:outline-none cursor-pointer pr-1"
             >
-              <option value="default" className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">Default (Wasel Blue)</option>
-              <option value="midnight" className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">Midnight (Neon Indigo)</option>
-              <option value="emerald" className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">Emerald (Fintech Green)</option>
-              <option value="ocean" className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">Ocean (Deep Cyan)</option>
-              <option value="luxury" className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">Luxury (Gold)</option>
-              <option value="crimson" className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">Crimson (Rose)</option>
+              <option value="default" className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">Default</option>
+              <option value="midnight" className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">Midnight</option>
+              <option value="emerald" className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">Emerald</option>
+              <option value="ocean" className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">Ocean</option>
+              <option value="luxury" className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">Luxury</option>
+              <option value="crimson" className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">Crimson</option>
               <option value="minimal" className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">Minimal</option>
               <option value="corporate" className="bg-white dark:bg-slate-900 text-gray-900 dark:text-white">Corporate</option>
             </select>
@@ -100,10 +127,10 @@ export const DemoHeader: React.FC<DemoHeaderProps> = ({
           {/* Light / Dark Mode Toggle */}
           <button
             onClick={onToggleDarkMode}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-gray-700 text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-slate-700 transition-all active:scale-95 shadow-sm"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-gray-700 text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-slate-700 transition-all active:scale-95 shadow-sm cursor-pointer"
             title="Toggle Light / Dark Mode"
           >
-            <span>{isDarkMode ? "☀️ Light" : "🌙 Dark"}</span>
+            <span>{isDarkMode ? "☀️" : "🌙"}</span>
           </button>
         </div>
       </div>

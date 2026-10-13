@@ -31,6 +31,7 @@ export interface ThemeColors {
   rowSelected: string;
   theadBg?: string;
   theadText?: string;
+  tableBg?: string;
   rowStripe?: string;
 }
 

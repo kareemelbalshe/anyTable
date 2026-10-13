@@ -30,6 +30,10 @@
 - ✅ **Native Ref Forwarding & Imperative Controls**: دعم تمرير `ref={tableRef}` القياسي مع الحفاظ التام على الـ Generic Types `<TData>` وتوفير دوال متقدمة مثل `tableRef.current.scrollToIndex(index, "center")`.
 - ✅ **Cross-Page Selection Persistence**: الحفاظ التلقائي على العناصر المختارة عبر صفحات الـ Pagination.
 - ✅ **Refined Date Detection**: إصلاح الفحص التلقائي للتواريخ ومنع الأخطاء في أعمدة مثل `category` و `status`.
+- ✅ **Native Zero-Dependency Export Engine (v1.1.0)**: محرك تصدير مدمج بالكامل لملفات CSV و JSON يدعم UTF-8 BOM لحماية النصوص العربية في Excel بدون مكتبات إضافية.
+- ✅ **First-Class RTL & Internationalization (v1.1.0)**: دعم كامل للغة العربية واتجاه RTL مع قواميس نصوص جاهزة وعكس تلقائي للواجهة (`dir="rtl"` و `locale="ar"`).
+- ✅ **Column Pinning & Interactive Resizing (v1.1.0)**: تثبيت الأعمدة يساراً ويميناً وتعديل أحجام الأعمدة بالسحب التفاعلي.
+- ✅ **Standalone Headless Hook (`useAnyTable`) (v1.1.0)**: إتاحة خطاف برمجي منفصل بالكامل لبناء واجهات جداول مخصصة (Shadcn/UI, Tailwind) بنفس قوة المحرك الذكي.
 
 ---
 
