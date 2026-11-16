@@ -31,7 +31,9 @@ export function generateCsvContent<TData = any>(
   data: TData[],
   columns: ColumnDef<TData>[]
 ): string {
-  const exportCols = columns.filter((col) => !col.hidden && col.key);
+  const exportCols = columns.filter(
+    (col) => !col.hidden && col.key && col.exportable !== false
+  );
 
   // Headers line
   const headers = exportCols.map((col) => {
@@ -46,15 +48,26 @@ export function generateCsvContent<TData = any>(
     const row = data[i];
     const rowValues = exportCols.map((col) => {
       const rawVal = getNestedValue(row, String(col.key));
-      if (rawVal === null || rawVal === undefined) return "";
-      if (typeof rawVal === "object") {
+      let cellVal = rawVal;
+
+      if (typeof col.exportFormatter === "function") {
+        cellVal = col.exportFormatter(rawVal, row, i);
+      } else if (typeof col.formatter === "function") {
+        const formatted = col.formatter(rawVal, row, i);
+        if (typeof formatted === "string" || typeof formatted === "number") {
+          cellVal = formatted;
+        }
+      }
+
+      if (cellVal === null || cellVal === undefined) return "";
+      if (typeof cellVal === "object") {
         try {
-          return escapeCsvValue(JSON.stringify(rawVal));
+          return escapeCsvValue(JSON.stringify(cellVal));
         } catch {
           return "";
         }
       }
-      return escapeCsvValue(rawVal);
+      return escapeCsvValue(cellVal);
     });
     lines.push(rowValues.join(","));
   }

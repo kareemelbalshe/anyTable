@@ -70,4 +70,65 @@ describe("useAnyTable Headless Hook", () => {
     });
     expect(result.current.selection.selectedRows.length).toBe(0);
   });
+
+  it("exports all filtered rows in client mode across pages, not just the active page", async () => {
+    let exportedData: any[] = [];
+    const { result } = renderHook(() =>
+      useAnyTable({
+        data: sampleData,
+        pagination: { defaultPageSize: 1 }, // 3 pages
+        exportable: {
+          onExport: async (format, ctx) => {
+            exportedData = ctx.scope === "all" ? sampleData : ctx.currentPageRows;
+          },
+        },
+      })
+    );
+
+    // Active page only has 1 row
+    expect(result.current.rows.length).toBe(1);
+    expect(result.current.totalRecords).toBe(3);
+
+    // Trigger export with default "all" scope
+    await act(async () => {
+      await result.current.exportData("csv", "test-export", "all");
+    });
+
+    expect(exportedData.length).toBe(3);
+  });
+
+  it("supports server-side pagination export via fetchAllRows", async () => {
+    const allServerRecords = [
+      { id: 101, name: "Order 1" },
+      { id: 102, name: "Order 2" },
+      { id: 103, name: "Order 3" },
+      { id: 104, name: "Order 4" },
+    ];
+
+    let fetchAllCalledWith: any = null;
+
+    const { result } = renderHook(() =>
+      useAnyTable({
+        api: {
+          fetcher: async (params) => ({
+            data: [allServerRecords[0]], // only returns page 1 (1 item)
+            total: allServerRecords.length,
+          }),
+        },
+        exportable: {
+          fetchAllRows: async (params) => {
+            fetchAllCalledWith = params;
+            return allServerRecords;
+          },
+        },
+      })
+    );
+
+    await act(async () => {
+      await result.current.exportData("csv");
+    });
+
+    expect(fetchAllCalledWith).not.toBeNull();
+    expect(fetchAllCalledWith.all).toBe(true);
+  });
 });

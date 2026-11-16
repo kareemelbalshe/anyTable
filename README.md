@@ -277,6 +277,55 @@ const tableRef = useRef<TableInstance>(null);
 tableRef.current?.exportData("csv", "quarterly-report");
 ```
 
+### ⚡ Server-Side Pagination & Exporting All Filtered Rows
+
+When building admin panels with server-side pagination, the frontend only loads the active page (e.g. 10 or 25 rows) out of thousands of records. AnyTable gives you two enterprise-grade patterns to export **all filtered rows**:
+
+#### Pattern 1: `fetchAllRows` (Fetch full dataset & let AnyTable generate Excel CSV)
+Provide `fetchAllRows` in `exportable`. AnyTable automatically passes current `search`, `sortBy`, `sortOrder`, and extra parameters, displays a loading spinner on the button, generates the CSV with UTF-8 BOM, and triggers the download:
+
+```tsx
+<AnyTable<User>
+  api={{
+    fetcher: fetchUsersApi, // server-side pagination (10 per page)
+  }}
+  exportable={{
+    csv: true,
+    filename: "filtered-users",
+    fetchAllRows: async ({ search, sortBy, sortOrder }) => {
+      // Calls your endpoint without pagination limit:
+      const res = await axios.get("/api/users/all", {
+        params: { search, sortBy, sortOrder },
+      });
+      return res.data;
+    },
+  }}
+/>
+```
+
+#### Pattern 2: `onExport` (Backend Streaming / Full Control)
+For massive datasets (e.g. 100,000+ rows) where generating in browser memory isn't ideal, delegate the export to your backend:
+
+```tsx
+<AnyTable<Order>
+  api={{ fetcher: fetchOrdersApi }}
+  exportable={{
+    onExport: async (format, context) => {
+      const { search, sortBy, sortOrder, totalRecords } = context;
+      // Trigger backend report generation or streaming download:
+      window.open(`/api/reports/export?format=${format}&search=${search}&sortBy=${sortBy}`);
+    },
+  }}
+/>
+```
+
+#### Advanced Export Options
+- **`scope`**: `"all"` (all filtered rows, default in client mode & when fetchAllRows is set) | `"current-page"` (active page only) | `"selected"` (checkbox-selected rows).
+- **`showScopeOptions: true`**: Exposes scope choices ("All Filtered", "Current Page", "Selected") in the toolbar dropdown.
+- **`col.exportable: false`**: Exclude specific columns (e.g. actions, internal IDs) from the exported file.
+- **`col.exportFormatter: (value, row) => string`**: Custom cell formatting specifically for CSV/Excel without affecting UI renderers.
+- **`isExporting`**: Reactive loading indicator exposed via `useAnyTable` and `tableRef.current?.isExporting`.
+
 ---
 
 ## 🌍 First-Class RTL & Internationalization (Arabic & English)

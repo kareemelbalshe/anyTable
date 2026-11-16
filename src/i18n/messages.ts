@@ -16,6 +16,10 @@ export interface TableMessages {
   exportCsv: string;
   exportJson: string;
   exportSuccess: string;
+  exporting: string;
+  exportAll: string;
+  exportCurrentPage: string;
+  exportSelected: string;
   selectAll: string;
   selectRow: string;
   prevPage: string;
@@ -46,6 +50,10 @@ export const enMessages: TableMessages = {
   exportCsv: "Export CSV",
   exportJson: "Export JSON",
   exportSuccess: "Export completed successfully",
+  exporting: "Exporting...",
+  exportAll: "Export All Filtered",
+  exportCurrentPage: "Export Current Page",
+  exportSelected: "Export Selected Rows",
   selectAll: "Select all rows",
   selectRow: "Select row",
   prevPage: "Previous page",
@@ -76,6 +84,10 @@ export const arMessages: TableMessages = {
   exportCsv: "تصدير CSV (Excel)",
   exportJson: "تصدير JSON",
   exportSuccess: "تم تصدير البيانات بنجاح",
+  exporting: "جاري التصدير...",
+  exportAll: "تصدير كل السجلات (المفلترة)",
+  exportCurrentPage: "تصدير الصفحة الحالية فقط",
+  exportSelected: "تصدير السجلات المحددة",
   selectAll: "تحديد جميع الصفوف",
   selectRow: "تحديد الصف",
   prevPage: "الصفحة السابقة",

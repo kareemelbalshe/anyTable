@@ -149,4 +149,14 @@ export interface ColumnDef<TData = any, TValue = any> {
       variant?: "success" | "danger" | "warning" | "info" | "neutral";
     }
   >;
+
+  /**
+   * Whether this column should be included in CSV/JSON exports. Defaults to true.
+   */
+  exportable?: boolean;
+
+  /**
+   * Custom value transformer when exporting to CSV or JSON.
+   */
+  exportFormatter?: (value: any, row: TData, index: number) => string | number | null | undefined;
 }

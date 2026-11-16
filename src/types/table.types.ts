@@ -1,15 +1,64 @@
 import React from "react";
 import { ColumnDef, SortDirection } from "./column.types";
 import { TableAction, SwitchAction } from "./action.types";
-import { ApiConfig, PaginationMeta } from "./api.types";
+import { ApiConfig, ApiFetcherParams, PaginationMeta } from "./api.types";
 import { AnyTableTheme, TablePreset } from "./theme.types";
 import { TableMessages } from "../i18n";
 
-export interface ExportConfig {
+export type ExportScope = "all" | "current-page" | "selected" | "auto";
+
+export interface ExportContext<TData = any> {
+  format: "csv" | "json";
+  scope: ExportScope;
+  search: string;
+  sortBy: string | null;
+  sortOrder: SortDirection;
+  params?: Record<string, any>;
+  currentPageRows: TData[];
+  selectedRows: TData[];
+  selectedKeys: (string | number)[];
+  totalRecords: number;
+  columns: ColumnDef<TData>[];
+  defaultExport: (rows: TData[], filename?: string) => void;
+}
+
+export interface ExportConfig<TData = any> {
   enabled?: boolean;
   csv?: boolean;
   json?: boolean;
   filename?: string;
+
+  /**
+   * Default export scope:
+   * - 'all': Exports all filtered rows (all matching client records, or calls fetchAllRows in server mode).
+   * - 'current-page': Exports only the current page of visible rows.
+   * - 'selected': Exports currently selected rows (falls back to all filtered if none selected).
+   * - 'auto': In client mode exports 'all'; in server mode exports 'all' if fetchAllRows/onExport is provided, otherwise 'current-page'.
+   * Defaults to 'auto'.
+   */
+  scope?: ExportScope;
+
+  /**
+   * For server-side pagination:
+   * A function that fetches all matching filtered rows from the backend,
+   * OR `true` to automatically invoke `api.fetcher` with all current search/sort/filter parameters without pagination limit (e.g. limit: totalRecords or all: true).
+   * AnyTable takes care of generating the CSV/JSON with RTL & Excel BOM, column mapping, and triggering the file download.
+   */
+  fetchAllRows?: boolean | ((params: ApiFetcherParams) => Promise<TData[]> | TData[]);
+
+  /**
+   * Custom export handler for full control over export logic (e.g. triggering server-side CSV streaming, backend download URLs, or reporting).
+   */
+  onExport?: (
+    format: "csv" | "json",
+    context: ExportContext<TData>
+  ) => Promise<void> | void;
+
+  /**
+   * Whether to show multiple scope options in the export dropdown (e.g. All Filtered vs Current Page vs Selected).
+   * Defaults to false.
+   */
+  showScopeOptions?: boolean;
 }
 
 export type RowKeyResolver<TData = any> =
@@ -85,6 +134,7 @@ export interface TableState<TData = any> {
   selectedRowKeys: (string | number)[];
   selectedRows: TData[];
   isServerMode: boolean;
+  isExporting?: boolean;
 }
 
 export interface TableInstance<TData = any> {
@@ -156,7 +206,16 @@ export interface TableInstance<TData = any> {
   /**
    * Triggers file download of the current table data (CSV or JSON).
    */
-  exportData?: (format?: "csv" | "json", filename?: string) => void;
+  exportData?: (
+    format?: "csv" | "json",
+    filename?: string,
+    scope?: ExportScope
+  ) => Promise<void>;
+
+  /**
+   * Whether an export operation is currently fetching data or generating a file.
+   */
+  isExporting?: boolean;
 }
 
 export interface AnyTableProps<TData = any> {
@@ -365,7 +424,7 @@ export interface AnyTableProps<TData = any> {
   /**
    * Built-in CSV & JSON export engine configuration or boolean to enable export in toolbar.
    */
-  exportable?: boolean | ExportConfig;
+  exportable?: boolean | ExportConfig<TData>;
 
   /**
    * Enables interactive column width resizing handles on the table header. Defaults to false.

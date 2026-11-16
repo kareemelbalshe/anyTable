@@ -393,6 +393,75 @@ describe("<AnyTable /> Component", () => {
     expect(selectedSnapshot.length).toBe(2);
     expect(selectedSnapshot.map((u) => u.id)).toEqual(["1", "3"]);
   });
+
+  it("handles exporting all filtered rows with server-side pagination via fetchAllRows", async () => {
+    const serverRows = [
+      { id: "101", name: "Alpha User" },
+      { id: "102", name: "Beta User" },
+      { id: "103", name: "Gamma User" },
+    ];
+
+    let fetchAllCalled = false;
+    let receivedParams: any = null;
+
+    render(
+      <AnyTable
+        title="Server Export Test"
+        api={{
+          fetcher: async () => ({
+            data: [serverRows[0]],
+            total: serverRows.length,
+          }),
+        }}
+        columns={[{ key: "name", title: "Name" }]}
+        exportable={{
+          fetchAllRows: async (params) => {
+            fetchAllCalled = true;
+            receivedParams = params;
+            return serverRows;
+          },
+        }}
+      />
+    );
+
+    // Find export button
+    const exportBtn = screen.getByRole("button", { name: /export/i });
+    expect(exportBtn).toBeInTheDocument();
+
+    await act(async () => {
+      fireEvent.click(exportBtn);
+    });
+
+    expect(fetchAllCalled).toBe(true);
+    expect(receivedParams.all).toBe(true);
+  });
+
+  it("handles custom onExport callback receiving rich ExportContext", async () => {
+    let capturedContext: any = null;
+
+    render(
+      <AnyTable
+        data={users}
+        columns={[{ key: "name", title: "Name" }]}
+        exportable={{
+          onExport: async (format, ctx) => {
+            capturedContext = ctx;
+          },
+        }}
+      />
+    );
+
+    const exportBtn = screen.getByRole("button", { name: /export/i });
+    await act(async () => {
+      fireEvent.click(exportBtn);
+    });
+
+    expect(capturedContext).not.toBeNull();
+    expect(capturedContext.format).toBe("csv");
+    expect(capturedContext.totalRecords).toBe(2);
+    expect(capturedContext.currentPageRows.length).toBe(2);
+    expect(typeof capturedContext.defaultExport).toBe("function");
+  });
 });
 
 

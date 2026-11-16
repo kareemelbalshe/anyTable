@@ -52,4 +52,29 @@ describe("Export Engine (Zero-Dependency)", () => {
     expect(() => exportToCsv(data, columns, "test.csv")).not.toThrow();
     expect(() => exportToJson(data, "test.json")).not.toThrow();
   });
+
+  it("respects exportFormatter and exportable: false in column definitions", () => {
+    const data = [
+      { id: 1, name: "Kareem", internalSecret: "xyz123", amount: 1500 },
+      { id: 2, name: "Sara", internalSecret: "abc789", amount: 2800 },
+    ];
+
+    const columns = [
+      { key: "id", title: "ID" },
+      { key: "name", title: "Name" },
+      { key: "internalSecret", title: "Secret", exportable: false },
+      {
+        key: "amount",
+        title: "Amount",
+        exportFormatter: (val: number) => `$${val.toLocaleString()}`,
+      },
+    ];
+
+    const csv = generateCsvContent(data, columns);
+
+    expect(csv).not.toContain("Secret");
+    expect(csv).not.toContain("xyz123");
+    expect(csv).toContain("$1,500");
+    expect(csv).toContain("$2,800");
+  });
 });

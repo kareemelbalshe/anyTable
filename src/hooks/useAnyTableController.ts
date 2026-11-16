@@ -1,5 +1,5 @@
 import React, { useImperativeHandle } from "react";
-import { TableInstance, TableState } from "../types/table.types";
+import { TableInstance, TableState, ExportScope } from "../types/table.types";
 import { SortDirection } from "../types/column.types";
 
 export interface UseAnyTableControllerParams<TData = any> {
@@ -16,7 +16,12 @@ export interface UseAnyTableControllerParams<TData = any> {
   clearSelection: () => void;
   getState: () => TableState<TData>;
   scrollToIndex?: (index: number, align?: "start" | "center" | "end" | "auto") => void;
-  exportData?: (format?: "csv" | "json", filename?: string) => void;
+  exportData?: (
+    format?: "csv" | "json",
+    filename?: string,
+    scope?: ExportScope
+  ) => Promise<void>;
+  isExporting?: boolean;
 }
 
 export function useAnyTableController<TData = any>({
@@ -34,6 +39,7 @@ export function useAnyTableController<TData = any>({
   getState,
   scrollToIndex,
   exportData,
+  isExporting,
 }: UseAnyTableControllerParams<TData>) {
   useImperativeHandle(
     tableRef,
@@ -57,6 +63,7 @@ export function useAnyTableController<TData = any>({
       getState,
       scrollToIndex,
       exportData,
+      isExporting,
     }),
     [
       refresh,
@@ -72,6 +79,7 @@ export function useAnyTableController<TData = any>({
       getState,
       scrollToIndex,
       exportData,
+      isExporting,
     ]
   );
 }

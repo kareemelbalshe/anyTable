@@ -41,6 +41,21 @@ export const SaaSSubscriptionsTab: React.FC<SaaSSubscriptionsTabProps> = ({
         api={{
           fetcher: fetchSaaSSubscriptionsApi,
         }}
+        exportable={{
+          enabled: true,
+          csv: true,
+          json: true,
+          showScopeOptions: true,
+          fetchAllRows: async (params) => {
+            showToast("Fetching all filtered records from server for export...");
+            const res = await fetchSaaSSubscriptionsApi({
+              ...params,
+              page: 1,
+              pageSize: 9999,
+            });
+            return res.data;
+          },
+        }}
         columns={[
           {
             key: "company",

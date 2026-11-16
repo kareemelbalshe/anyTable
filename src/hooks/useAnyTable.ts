@@ -5,9 +5,12 @@ import {
   SortingConfig,
   PaginationConfig,
   ExportConfig,
+  ExportScope,
+  ExportContext,
 } from "../types/table.types";
 import { ColumnDef } from "../types/column.types";
-import { ApiConfig } from "../types/api.types";
+import { ApiConfig, ApiFetcherParams } from "../types/api.types";
+import { normalizeApiResponse } from "../adapters/apiAdapter";
 import { resolveColumns } from "../columns/columnResolver";
 import { useAnyTableSearch } from "./useAnyTableSearch";
 import { useAnyTableSorting } from "./useAnyTableSorting";
@@ -28,7 +31,7 @@ export interface UseAnyTableOptions<TData = any> {
   pagination?: boolean | PaginationConfig;
   manualLoading?: boolean;
   onSelectionChange?: (selectedRows: TData[], selectedKeys: (string | number)[]) => void;
-  exportable?: boolean | ExportConfig;
+  exportable?: boolean | ExportConfig<TData>;
 }
 
 export function useAnyTable<TData = any>(options: UseAnyTableOptions<TData> = {}) {
@@ -115,6 +118,7 @@ export function useAnyTable<TData = any>(options: UseAnyTableOptions<TData> = {}
   // 6. Data Orchestration
   const {
     rows,
+    allFilteredRows,
     totalRecords,
     loading,
     error,
@@ -168,20 +172,178 @@ export function useAnyTable<TData = any>(options: UseAnyTableOptions<TData> = {}
   });
 
   // 8. Export Function
-  const exportData = useCallback(
-    (format: "csv" | "json" = "csv", filename?: string) => {
-      const defaultFilename =
-        (typeof exportable === "object" && exportable?.filename) ||
-        filename ||
-        "table-export";
+  const [isExporting, setIsExporting] = useState<boolean>(false);
 
+  const exportData = useCallback(
+    async (
+      format: "csv" | "json" = "csv",
+      filename?: string,
+      scopeOverride?: ExportScope
+    ): Promise<void> => {
+      const exportConfig = typeof exportable === "object" ? exportable : {};
+      const defaultFilename =
+        exportConfig.filename || filename || "table-export";
+
+      // Determine effective scope
+      let effectiveScope: ExportScope = scopeOverride || exportConfig.scope || "auto";
+      if (effectiveScope === "auto") {
+        if (!isServerMode) {
+          effectiveScope = "all";
+        } else {
+          effectiveScope =
+            exportConfig.fetchAllRows || exportConfig.onExport
+              ? "all"
+              : "current-page";
+        }
+      }
+
+      // Check for custom onExport handler first
+      if (typeof exportConfig.onExport === "function") {
+        setIsExporting(true);
+        try {
+          const exportContext: ExportContext<TData> = {
+            format,
+            scope: effectiveScope,
+            search: searchQuery,
+            sortBy,
+            sortOrder,
+            params: api?.params,
+            currentPageRows: rows,
+            selectedRows,
+            selectedKeys: Array.from(selectedKeys),
+            totalRecords,
+            columns: resolvedColumns,
+            defaultExport: (customRows, customName) => {
+              const fname = customName || defaultFilename;
+              if (format === "json") {
+                exportToJson(customRows, fname);
+              } else {
+                exportToCsv(customRows, resolvedColumns, fname);
+              }
+            },
+          };
+          await exportConfig.onExport(format, exportContext);
+        } finally {
+          setIsExporting(false);
+        }
+        return;
+      }
+
+      // Handle based on scope
+      if (effectiveScope === "selected" && selectedRows.length > 0) {
+        if (format === "json") {
+          exportToJson(selectedRows, defaultFilename);
+        } else {
+          exportToCsv(selectedRows, resolvedColumns, defaultFilename);
+        }
+        return;
+      }
+
+      if (effectiveScope === "current-page") {
+        if (format === "json") {
+          exportToJson(rows, defaultFilename);
+        } else {
+          exportToCsv(rows, resolvedColumns, defaultFilename);
+        }
+        return;
+      }
+
+      // effectiveScope is "all"
+      if (!isServerMode) {
+        const targetRows =
+          allFilteredRows && allFilteredRows.length > 0 ? allFilteredRows : rows;
+        if (format === "json") {
+          exportToJson(targetRows, defaultFilename);
+        } else {
+          exportToCsv(targetRows, resolvedColumns, defaultFilename);
+        }
+        return;
+      }
+
+      // Server mode:
+      if (exportConfig.fetchAllRows) {
+        setIsExporting(true);
+        try {
+          let rowsToExport: TData[] = [];
+          if (typeof exportConfig.fetchAllRows === "function") {
+            const paramNames = api?.paramNames || {};
+            const pageKey = paramNames.pageParam || "page";
+            const pageSizeKey = paramNames.pageSizeParam || "limit";
+            const searchKey = paramNames.searchParam || "q";
+            const sortByKey = paramNames.sortByParam || "sortBy";
+            const sortOrderKey = paramNames.sortOrderParam || "sortOrder";
+
+            const fetchParams: ApiFetcherParams = {
+              [pageKey]: 1,
+              [pageSizeKey]: totalRecords || 999999,
+              page: 1,
+              pageSize: totalRecords || 999999,
+              ...(searchQuery ? { [searchKey]: searchQuery, search: searchQuery, q: searchQuery } : {}),
+              ...(sortBy ? { [sortByKey]: sortBy, sortBy } : {}),
+              ...(sortOrder ? { [sortOrderKey]: sortOrder, sortOrder } : {}),
+              ...(api?.params || {}),
+              all: true,
+            };
+            rowsToExport = await exportConfig.fetchAllRows(fetchParams);
+          } else if (exportConfig.fetchAllRows === true && api?.fetcher) {
+            const paramNames = api.paramNames || {};
+            const pageKey = paramNames.pageParam || "page";
+            const pageSizeKey = paramNames.pageSizeParam || "limit";
+            const searchKey = paramNames.searchParam || "q";
+            const sortByKey = paramNames.sortByParam || "sortBy";
+            const sortOrderKey = paramNames.sortOrderParam || "sortOrder";
+
+            const fetchParams: ApiFetcherParams = {
+              [pageKey]: 1,
+              [pageSizeKey]: totalRecords || 999999,
+              page: 1,
+              pageSize: totalRecords || 999999,
+              ...(searchQuery ? { [searchKey]: searchQuery, search: searchQuery, q: searchQuery } : {}),
+              ...(sortBy ? { [sortByKey]: sortBy, sortBy } : {}),
+              ...(sortOrder ? { [sortOrderKey]: sortOrder, sortOrder } : {}),
+              ...(api.params || {}),
+              all: true,
+            };
+            const rawResult = await api.fetcher(fetchParams);
+            const normalized = normalizeApiResponse<TData>(rawResult, api, fetchParams);
+            rowsToExport = normalized.data;
+          }
+
+          if (format === "json") {
+            exportToJson(rowsToExport, defaultFilename);
+          } else {
+            exportToCsv(rowsToExport, resolvedColumns, defaultFilename);
+          }
+        } finally {
+          setIsExporting(false);
+        }
+        return;
+      }
+
+      // Server mode fallback if neither fetchAllRows nor onExport provided
+      console.warn(
+        "AnyTable: Exporting current page only. For server-side pagination, configure 'exportable.fetchAllRows' or 'exportable.onExport' to fetch all filtered records."
+      );
       if (format === "json") {
         exportToJson(rows, defaultFilename);
       } else {
         exportToCsv(rows, resolvedColumns, defaultFilename);
       }
     },
-    [rows, resolvedColumns, exportable]
+    [
+      exportable,
+      isServerMode,
+      searchQuery,
+      sortBy,
+      sortOrder,
+      api,
+      rows,
+      allFilteredRows,
+      selectedRows,
+      selectedKeys,
+      totalRecords,
+      resolvedColumns,
+    ]
   );
 
   const resetAll = useCallback(() => {
@@ -198,6 +360,7 @@ export function useAnyTable<TData = any>(options: UseAnyTableOptions<TData> = {}
     loading,
     error,
     isServerMode,
+    isExporting,
     refresh,
     reset: resetAll,
     search: {

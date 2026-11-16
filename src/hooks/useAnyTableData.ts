@@ -40,10 +40,13 @@ export function useAnyTableData<TData = any>({
   const [fetchCounter, setFetchCounter] = useState<number>(0);
 
   const abortControllerRef = useRef<AbortController | null>(null);
+  const apiRef = useRef(api);
+  apiRef.current = api;
 
   // Fetch Remote API
   const fetchData = useCallback(async () => {
-    if (!isRemoteApi || !api?.fetcher) return;
+    const currentApi = apiRef.current;
+    if (!isRemoteApi || !currentApi?.fetcher) return;
 
     // Cancel any ongoing fetch request
     if (abortControllerRef.current) {
@@ -55,7 +58,7 @@ export function useAnyTableData<TData = any>({
     setLoading(true);
     setError(null);
 
-    const paramNames = api.paramNames || {};
+    const paramNames = currentApi.paramNames || {};
     const pageKey = paramNames.pageParam || "page";
     const pageSizeKey = paramNames.pageSizeParam || "limit";
     const searchKey = paramNames.searchParam || "q";
@@ -70,36 +73,36 @@ export function useAnyTableData<TData = any>({
       ...(searchQuery ? { [searchKey]: searchQuery, search: searchQuery, q: searchQuery } : {}),
       ...(sortBy ? { [sortByKey]: sortBy, sortBy } : {}),
       ...(sortOrder ? { [sortOrderKey]: sortOrder, sortOrder } : {}),
-      ...(api.params || {}),
+      ...(currentApi.params || {}),
     };
 
     try {
-      const rawResult = await api.fetcher(params, abortController.signal);
+      const rawResult = await currentApi.fetcher(params, abortController.signal);
 
       // Guard against aborted requests
       if (abortController.signal.aborted) return;
 
       const normalized: NormalizedApiResponse<TData> = normalizeApiResponse(
         rawResult,
-        api,
+        currentApi,
         params
       );
 
       setRemoteData(normalized.data);
       setTotalCount(normalized.meta.total);
-      api.onSuccess?.(normalized);
+      currentApi.onSuccess?.(normalized);
     } catch (err: any) {
       if (err?.name === "AbortError" || err?.name === "CanceledError") {
         return; // ignore expected aborts
       }
       setError(err);
-      api.onError?.(err);
+      currentApi.onError?.(err);
     } finally {
       if (!abortController.signal.aborted) {
         setLoading(false);
       }
     }
-  }, [isRemoteApi, api, page, pageSize, searchQuery, sortBy, sortOrder]);
+  }, [isRemoteApi, page, pageSize, searchQuery, sortBy, sortOrder]);
 
   // Trigger fetch when parameters or manual counter changes
   useEffect(() => {
@@ -124,11 +127,12 @@ export function useAnyTableData<TData = any>({
   }, [isRemoteApi]);
 
   // Compute Active Display Rows
-  const { displayRows, finalTotal } = useMemo(() => {
+  const { displayRows, allFilteredRows, finalTotal } = useMemo(() => {
     // 1. If Remote Server Mode: Data is already paginated, filtered, and sorted by backend
     if (isServerMode) {
       return {
         displayRows: remoteData,
+        allFilteredRows: remoteData,
         finalTotal: totalCount,
       };
     }
@@ -159,6 +163,7 @@ export function useAnyTableData<TData = any>({
 
     return {
       displayRows,
+      allFilteredRows: sorted,
       finalTotal: filtered.length,
     };
   }, [
@@ -178,6 +183,7 @@ export function useAnyTableData<TData = any>({
 
   return {
     rows: displayRows,
+    allFilteredRows,
     totalRecords: finalTotal,
     loading: manualLoading !== undefined ? manualLoading : loading,
     error,

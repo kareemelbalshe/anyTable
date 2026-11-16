@@ -4,6 +4,28 @@ All notable changes to **AnyTable** (`@kareemelbalshe/any-table`) are documented
 
 ---
 
+## [1.3.0] - 2026-11-16
+
+### 🌟 Enterprise Server-Side Export & Enhancements
+- 📊 **Server-Side Pagination Export (`fetchAllRows`)**:
+  - Full support for exporting **all filtered rows** rather than only the current page when server-side pagination is active.
+  - Added `exportable.fetchAllRows?: boolean | ((params) => Promise<TData[]>)`. AnyTable automatically passes active search, sorting, and filter parameters to retrieve full filtered results and format them with UTF-8 BOM CSV / JSON.
+- 🚀 **Full-Control Custom Export (`onExport`)**:
+  - Added `exportable.onExport?: (format, context) => Promise<void> | void` for enterprise streaming downloads or delegating report generation to backend endpoints.
+- 🎯 **Client-Side Export Enhancement**:
+  - Client-side tables now automatically export **all filtered & sorted records** across pages by default instead of only the active page slice.
+- 📐 **Granular Export Scopes & Column Control**:
+  - Added `scope?: "all" | "current-page" | "selected" | "auto"`.
+  - Added `showScopeOptions?: boolean` to provide scope sub-options in the toolbar dropdown.
+  - Added `col.exportable?: boolean` to exclude specific columns from exports.
+  - Added `col.exportFormatter?: (value, row) => string` for custom cell values during export without altering React UI renderers.
+- ⏳ **Reactive Export State**:
+  - Added `isExporting` state with animated spinner and disabled state on the toolbar button to prevent duplicate export submissions. Exposed on `TableInstance` and `useAnyTable`.
+- 🛡️ **API Stability**:
+  - Secured `useAnyTableData` with `apiRef` to prevent re-fetch loops when `api={{ fetcher }}` is defined inline.
+
+---
+
 ## [1.1.0] - 2026-10-13
 
 ### 🌟 New Features & Enhancements
